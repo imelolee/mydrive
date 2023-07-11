@@ -3,7 +3,7 @@ package org.mydrive.entity.enums;
 public enum VerifyRegexEnum {
     NO("", "不校验"),
     EMAIL("^\\s*\\w+(?:\\.{0,1}[\\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\\.[a-zA-Z]+\\s*$", "邮箱"),
-    PASSWORD("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&+=])(?!.*\\s).{8,18}$", "密码为数字，字母，特殊字符，长度为8-18位");
+    PASSWORD("^(?=.*[a-zA-Z])(?=.*\\d).{8,18}$", "密码为数字，字母，特殊字符，长度为8-18位");
 
 
     private String regex;

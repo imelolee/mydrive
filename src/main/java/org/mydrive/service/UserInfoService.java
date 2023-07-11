@@ -124,4 +124,9 @@ public interface UserInfoService {
 	 */
 	Integer deleteUserInfoByNickName(String nickName);
 
+	/**
+	 * 用户注册
+	 */
+	void register(String email, String nickName, String password);
+
 }
