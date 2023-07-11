@@ -1,7 +1,12 @@
 package org.mydrive.utils;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.mydrive.exception.BusinessException;
+
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Random;
 
 
 public class StringTools {
@@ -50,4 +55,13 @@ public class StringTools {
         }
         return false;
     }
+
+    public static final String getRandomNumber(Integer length){
+        return RandomStringUtils.random(length, false, true);
+    }
+
+    public static String encodeByMd5(String orignString) {
+        return isEmpty(orignString) ? null: DigestUtils.md5Hex(orignString);
+    }
+
 }

@@ -1,9 +1,15 @@
 package org.mydrive.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.mydrive.component.RedisComponent;
+import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.SysSettingsDto;
+import org.mydrive.entity.enums.UserStatusEnum;
+import org.mydrive.exception.BusinessException;
 import org.springframework.stereotype.Service;
 
 import org.mydrive.entity.enums.PageSize;
@@ -14,6 +20,7 @@ import org.mydrive.entity.query.SimplePage;
 import org.mydrive.mappers.UserInfoMapper;
 import org.mydrive.service.UserInfoService;
 import org.mydrive.utils.StringTools;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -24,6 +31,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Resource
 	private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+
+	@Resource
+	private RedisComponent redisComponent;
 
 	/**
 	 * 根据条件查询列表
@@ -198,5 +208,35 @@ public class UserInfoServiceImpl implements UserInfoService {
 	@Override
 	public Integer deleteUserInfoByNickName(String nickName) {
 		return this.userInfoMapper.deleteByNickName(nickName);
+	}
+
+	/**
+	 * 用户注册
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void register(String email, String nickName, String password) {
+		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+		if (null != userInfo){
+			throw new BusinessException("邮箱账号已存在");
+		}
+		UserInfo nickNameUser = this.userInfoMapper.selectByNickName(nickName);
+		if (null != nickNameUser){
+			throw new BusinessException("昵称已存在");
+		}
+		String userId = StringTools.getRandomNumber(Constants.LENGTH_10);
+		UserInfo newUserInfo = new UserInfo();
+		newUserInfo.setUserId(userId);
+		newUserInfo.setNickName(nickName);
+		newUserInfo.setEmail(email);
+		newUserInfo.setPassword(StringTools.encodeByMd5(password));
+		newUserInfo.setJoinTime(new Date());
+		newUserInfo.setStatus(UserStatusEnum.ENABLE.getStatus());
+		newUserInfo.setUseSpace(0L);
+
+		SysSettingsDto sysSettingsDto = redisComponent.getSysSettingsDto();
+		newUserInfo.setTotalSpace(sysSettingsDto.getUserInitUsespace() * Constants.MB);
+
+		this.userInfoMapper.insert(newUserInfo);
 	}
 }
