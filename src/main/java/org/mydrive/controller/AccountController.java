@@ -3,11 +3,15 @@ package org.mydrive.controller;
 import java.io.IOException;
 import java.util.List;
 
+import org.mydrive.annotation.GlobalInterceptor;
+import org.mydrive.annotation.VerifyParam;
 import org.mydrive.entity.constants.Constants;
 import org.mydrive.entity.dto.CreateImageCode;
+import org.mydrive.entity.enums.VerifyRegexEnum;
 import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.entity.po.UserInfo;
 import org.mydrive.entity.vo.ResponseVO;
+import org.mydrive.exception.BusinessException;
 import org.mydrive.service.UserInfoService;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +55,23 @@ public class AccountController extends ABaseController{
 
 		vCode.write(response.getOutputStream());
 
+	}
+	@RequestMapping("/register")
+	@GlobalInterceptor(checkParams = true)
+	public ResponseVO register(HttpSession session,
+							   @VerifyParam(required = true, regex = VerifyRegexEnum.EMAIL, max = 150) String email,
+							   @VerifyParam(required = true) String nickName,
+							   @VerifyParam(required = true, regex = VerifyRegexEnum.PASSWORD, min = 8, max = 18) String password,
+							   @VerifyParam(required = true) String checkCode){
+		try {
+			if (!checkCode.equalsIgnoreCase((String) session.getAttribute(Constants.CHECK_CODE_KEY))){
+				throw new BusinessException("图片验证码不正确");
+			}
+			userInfoService.register(email, nickName, password);
+			return getSuccessResponseVO(null);
+		} finally {
+			session.removeAttribute(Constants.CHECK_CODE_KEY);
+		}
 	}
 
 	/**
