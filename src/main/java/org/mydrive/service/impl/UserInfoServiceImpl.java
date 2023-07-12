@@ -5,9 +5,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.mydrive.component.RedisComponent;
+import org.mydrive.entity.config.AppConfig;
 import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.dto.SysSettingsDto;
+import org.mydrive.entity.dto.UserSpaceDto;
 import org.mydrive.entity.enums.UserStatusEnum;
 import org.mydrive.exception.BusinessException;
 import org.springframework.stereotype.Service;
@@ -34,6 +38,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Resource
 	private RedisComponent redisComponent;
+
+	@Resource
+	private AppConfig appConfig;
 
 	/**
 	 * 根据条件查询列表
@@ -238,5 +245,40 @@ public class UserInfoServiceImpl implements UserInfoService {
 		newUserInfo.setTotalSpace(sysSettingsDto.getUserInitUsespace() * Constants.MB);
 
 		this.userInfoMapper.insert(newUserInfo);
+	}
+
+	@Override
+	public SessionWebUserDto login(String email, String password) {
+		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+		if (null == userInfo || !userInfo.getPassword().equals(StringTools.encodeByMd5(password))){
+			throw new BusinessException("邮箱或密码错误");
+		}
+		if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())){
+			throw new BusinessException("账号被禁用");
+		}
+		// 更新最后登录时间
+		UserInfo updateInfo = new UserInfo();
+		updateInfo.setLastLoginTime(new Date());
+
+		this.userInfoMapper.updateByUserId(updateInfo, userInfo.getUserId());
+
+		SessionWebUserDto sessionWebUserDto = new SessionWebUserDto();
+		sessionWebUserDto.setNickName(userInfo.getNickName());
+		sessionWebUserDto.setUserId(userInfo.getUserId());
+		// 判断是否为管理员账户
+		if (ArrayUtils.contains(appConfig.getAdminEmails().split(","), email)) {
+			sessionWebUserDto.setAdmin(true);
+		} else{
+			sessionWebUserDto.setAdmin(false);
+		}
+
+		// 用户空间
+		UserSpaceDto userSpaceDto = new UserSpaceDto();
+		// TODO: 查询用户已使用空间
+//		userSpaceDto.setUseSpace();
+		userSpaceDto.setTotalSpace(userInfo.getTotalSpace());
+		redisComponent.saveUserSpaceUse(userInfo.getUserId(), userSpaceDto);
+
+		return sessionWebUserDto;
 	}
 }
