@@ -2,6 +2,7 @@ package org.mydrive.service;
 
 import java.util.List;
 
+import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.entity.po.UserInfo;
 import org.mydrive.entity.vo.PaginationResultVO;
@@ -128,5 +129,7 @@ public interface UserInfoService {
 	 * 用户注册
 	 */
 	void register(String email, String nickName, String password);
+
+	SessionWebUserDto login(String email, String password);
 
 }

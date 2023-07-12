@@ -7,6 +7,7 @@ import org.mydrive.annotation.GlobalInterceptor;
 import org.mydrive.annotation.VerifyParam;
 import org.mydrive.entity.constants.Constants;
 import org.mydrive.entity.dto.CreateImageCode;
+import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.enums.VerifyRegexEnum;
 import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.entity.po.UserInfo;
@@ -56,6 +57,16 @@ public class AccountController extends ABaseController{
 		vCode.write(response.getOutputStream());
 
 	}
+
+	/**
+	 * 用户注册
+	 * @param session
+	 * @param email
+	 * @param nickName
+	 * @param password
+	 * @param checkCode
+	 * @return
+	 */
 	@RequestMapping("/register")
 	@GlobalInterceptor(checkParams = true)
 	public ResponseVO register(HttpSession session,
@@ -69,6 +80,24 @@ public class AccountController extends ABaseController{
 			}
 			userInfoService.register(email, nickName, password);
 			return getSuccessResponseVO(null);
+		} finally {
+			session.removeAttribute(Constants.CHECK_CODE_KEY);
+		}
+	}
+
+	@RequestMapping("/login")
+	@GlobalInterceptor(checkParams = true)
+	public ResponseVO login(HttpSession session,
+							   @VerifyParam(required = true) String email,
+							   @VerifyParam(required = true) String password,
+							   @VerifyParam(required = true) String checkCode){
+		try {
+			if (!checkCode.equalsIgnoreCase((String) session.getAttribute(Constants.CHECK_CODE_KEY))){
+				throw new BusinessException("图片验证码不正确");
+			}
+			SessionWebUserDto loginDto = userInfoService.login(email, password);
+			session.setAttribute(Constants.SESSION_KEY, loginDto);
+			return getSuccessResponseVO(loginDto);
 		} finally {
 			session.removeAttribute(Constants.CHECK_CODE_KEY);
 		}

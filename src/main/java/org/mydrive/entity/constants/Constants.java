@@ -15,4 +15,14 @@ public class Constants {
 
     public static final String REDIS_KEY_SYS_SETTING = "mydrive:syssetting:";
 
+    public static final String REDIS_KEY_USER_SPACE_USE = "mydrive:user:spaceuse:";
+
+    public static final Integer REDIS_KEY_EX_ONE_MIN = 60;
+
+    public static final Integer REDIS_KEY_EX_ONE_DAY = REDIS_KEY_EX_ONE_MIN * 60 * 24;
+
+    public static final String SESSION_KEY = "session_key";
+
+
+
 }
