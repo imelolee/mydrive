@@ -281,4 +281,16 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 		return sessionWebUserDto;
 	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void resetPwd(String email, String password) {
+		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
+		if (null == userInfo) {
+			throw new BusinessException("邮箱账户不存在");
+		}
+		UserInfo updateInfo = new UserInfo();
+		updateInfo.setPassword(StringTools.encodeByMd5(password));
+		this.userInfoMapper.updateByEmail(updateInfo, email);
+	}
 }
