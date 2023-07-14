@@ -64,4 +64,14 @@ public class StringTools {
         return isEmpty(orignString) ? null: DigestUtils.md5Hex(orignString);
     }
 
+    public static boolean pathIsOk(String path) {
+        if (StringTools.isEmpty(path)) {
+            return true;
+        }
+        if (path.contains("../") || path.contains("..\\")) {
+            return false;
+        }
+        return true;
+    }
+
 }

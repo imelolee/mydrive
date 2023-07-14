@@ -130,6 +130,13 @@ public interface UserInfoService {
 	 */
 	void register(String email, String nickName, String password);
 
+	/**
+	 * 用户登录
+	 */
 	SessionWebUserDto login(String email, String password);
 
+	/**
+	 * 重置密码
+	 */
+	void resetPwd(String email, String password);
 }
