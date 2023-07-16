@@ -6,9 +6,10 @@ import org.mydrive.entity.dto.UserSpaceDto;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 
 @Component("redisComponent")
-public class RedisComponent {
+public class RedisComponent{
     @Resource
     private RedisUtils redisUtils;
 
