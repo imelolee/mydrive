@@ -7,6 +7,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.mydrive.annotation.GlobalInterceptor;
 import org.mydrive.annotation.VerifyParam;
+import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.enums.ResponseCodeEnum;
 import org.mydrive.exception.BusinessException;
 import org.mydrive.utils.StringTools;
@@ -14,7 +16,11 @@ import org.mydrive.utils.VerifyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -37,35 +43,35 @@ public class GlobalOperatcionAspect {
 
 
     @Before("requestInterceptor()")
-    public void interceptorDo(JoinPoint point) throws BusinessException{
-        try{
+    public void interceptorDo(JoinPoint point) throws BusinessException {
+        try {
             Object target = point.getTarget();
             Object[] args = point.getArgs();
             String methodName = point.getSignature().getName();
             Class<?>[] parameterTypes = ((MethodSignature) point.getSignature()).getMethod().getParameterTypes();
             Method method = target.getClass().getMethod(methodName, parameterTypes);
             GlobalInterceptor interceptor = method.getAnnotation(GlobalInterceptor.class);
-            if (null == interceptor){
+            if (null == interceptor) {
                 return;
             }
             /**
              * 校验登录
              */
-//            if (interceptor.checkLogin() || interceptor.checkAdmin()){
-//                checkLogin(interceptor.checkAdmin());
-//            }
+            if (interceptor.checkLogin() || interceptor.checkAdmin()) {
+                checkLogin(interceptor.checkAdmin());
+            }
             /**
              * 校验参数
              */
-            if (interceptor.checkParams()){
+            if (interceptor.checkParams()) {
                 validateParams(method, args);
             }
 
 
-        } catch (BusinessException e){
+        } catch (BusinessException e) {
             logger.error("全局拦截器异常", e);
             throw e;
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("全局拦截器异常", e);
             throw new BusinessException(ResponseCodeEnum.CODE_500);
         } catch (Throwable e) {
@@ -75,17 +81,30 @@ public class GlobalOperatcionAspect {
 
     }
 
-    private void validateParams(Method m, Object[] args) throws BusinessException{
+    private void checkLogin(Boolean checkAdmin) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpSession session = request.getSession();
+        SessionWebUserDto userDto = (SessionWebUserDto) session.getAttribute(Constants.SESSION_KEY);
+
+        if (null == userDto){
+            throw new BusinessException(ResponseCodeEnum.CODE_901);
+        }
+        if (checkAdmin && !userDto.isAdmin()){
+            throw new BusinessException(ResponseCodeEnum.CODE_404);
+        }
+    }
+
+    private void validateParams(Method m, Object[] args) throws BusinessException {
         Parameter[] parameters = m.getParameters();
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
             Object value = args[i];
             VerifyParam verifyParam = parameter.getAnnotation(VerifyParam.class);
-            if (verifyParam == null){
+            if (verifyParam == null) {
                 continue;
             }
             // 基本数据类型
-            if (TYPE_STRING.equals(parameter.getParameterizedType().getTypeName()) || TYPE_LONG.equals(parameter.getParameterizedType().getTypeName())){
+            if (TYPE_STRING.equals(parameter.getParameterizedType().getTypeName()) || TYPE_LONG.equals(parameter.getParameterizedType().getTypeName())) {
                 checkValue(value, verifyParam);
             } else {
                 checkObjValue(parameter, value);
@@ -94,29 +113,29 @@ public class GlobalOperatcionAspect {
     }
 
     public void checkObjValue(Parameter parameter, Object value) {
-         try{
-             String typeName = parameter.getParameterizedType().getTypeName();
-             Class<?> classz = Class.forName(typeName);
-             Field[] fields = classz.getDeclaredFields();
-             for (Field field : fields) {
-                 VerifyParam fieldVerifyParam = field.getAnnotation(VerifyParam.class);
-                 if (null == fieldVerifyParam){
-                     continue;
-                 }
-                 field.setAccessible(true);
-                 Object resultValue = field.get(value);
+        try {
+            String typeName = parameter.getParameterizedType().getTypeName();
+            Class<?> classz = Class.forName(typeName);
+            Field[] fields = classz.getDeclaredFields();
+            for (Field field : fields) {
+                VerifyParam fieldVerifyParam = field.getAnnotation(VerifyParam.class);
+                if (null == fieldVerifyParam) {
+                    continue;
+                }
+                field.setAccessible(true);
+                Object resultValue = field.get(value);
                 checkValue(resultValue, fieldVerifyParam);
-             }
-         } catch (BusinessException e){
-             logger.error("参数校验失败", e);
-             throw e;
-         } catch (Exception e){
-             logger.error("参数校验失败", e);
-             throw new BusinessException(ResponseCodeEnum.CODE_600);
-         }
+            }
+        } catch (BusinessException e) {
+            logger.error("参数校验失败", e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("参数校验失败", e);
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
     }
 
-    private void checkValue(Object value, VerifyParam verifyParam) throws BusinessException{
+    private void checkValue(Object value, VerifyParam verifyParam) throws BusinessException {
         Boolean isEmpty = value == null || StringTools.isEmpty(value.toString());
         Integer length = value == null ? 0 : value.toString().length();
         /**
@@ -134,7 +153,7 @@ public class GlobalOperatcionAspect {
         /**
          * 校验正则
          */
-        if (!isEmpty && !StringTools.isEmpty(verifyParam.regex().getRegex()) && !VerifyUtils.verify(verifyParam.regex(), String.valueOf(value))){
+        if (!isEmpty && !StringTools.isEmpty(verifyParam.regex().getRegex()) && !VerifyUtils.verify(verifyParam.regex(), String.valueOf(value))) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
     }
