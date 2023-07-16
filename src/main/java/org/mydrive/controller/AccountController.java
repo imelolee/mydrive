@@ -3,7 +3,6 @@ package org.mydrive.controller;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 import org.mydrive.annotation.GlobalInterceptor;
 import org.mydrive.annotation.VerifyParam;
@@ -14,7 +13,6 @@ import org.mydrive.entity.dto.CreateImageCode;
 import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.dto.UserSpaceDto;
 import org.mydrive.entity.enums.VerifyRegexEnum;
-import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.entity.po.UserInfo;
 import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.exception.BusinessException;
@@ -22,14 +20,11 @@ import org.mydrive.service.UserInfoService;
 import org.mydrive.utils.StringTools;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.scanner.Constant;
 
 import javax.annotation.Resource;
-import javax.mail.Multipart;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -54,7 +49,6 @@ public class AccountController extends ABaseController {
 
     /**
      * 获取验证码
-     *
      * @param response
      * @param session
      * @param type
@@ -93,7 +87,7 @@ public class AccountController extends ABaseController {
      * @return
      */
     @RequestMapping("/register")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = false)
     public ResponseVO register(HttpSession session,
                                @VerifyParam(required = true, regex = VerifyRegexEnum.EMAIL, max = 150) String email,
                                @VerifyParam(required = true) String nickName,
@@ -120,7 +114,7 @@ public class AccountController extends ABaseController {
      * @return
      */
     @RequestMapping("/login")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = false)
     public ResponseVO login(HttpSession session,
                             @VerifyParam(required = true) String email,
                             @VerifyParam(required = true) String password,
@@ -147,7 +141,7 @@ public class AccountController extends ABaseController {
      * @return
      */
     @RequestMapping("/resetPwd")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = false )
     public ResponseVO resetPwd(HttpSession session,
                                @VerifyParam(required = true, regex = VerifyRegexEnum.EMAIL, max = 150) String email,
                                @VerifyParam(required = true, regex = VerifyRegexEnum.PASSWORD, min = 8, max = 18) String password,
@@ -171,7 +165,7 @@ public class AccountController extends ABaseController {
      * @param userId
      */
     @RequestMapping("/getAvatar/{userId}")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = false)
     public void getAvatar(HttpServletResponse response, HttpSession session, @VerifyParam(required = true) @PathVariable("userId") String userId) {
         String avatarFolderName = Constants.FILE_FOLDER_FILE + Constants.FILE_FOLDER_AVATAR;
         File folder = new File(avatarFolderName);
@@ -208,6 +202,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 获取登录用户信息
+     *
      * @param session
      * @return
      */
@@ -221,11 +216,12 @@ public class AccountController extends ABaseController {
 
     /**
      * 获取用户空间
+     *
      * @param session
      * @return
      */
     @RequestMapping("/getUseSpace")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor
     public ResponseVO getUseSpace(HttpSession session) {
         SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);
         UserSpaceDto spaceDto = redisComponent.getUserSpaceUse(sessionWebUserDto.getUserId());
@@ -234,11 +230,12 @@ public class AccountController extends ABaseController {
 
     /**
      * 退出登录
+     *
      * @param session
      * @return
      */
     @RequestMapping("/logout")
-    @GlobalInterceptor(checkParams = true)
+    @GlobalInterceptor(checkParams = true, checkLogin = false)
     public ResponseVO logout(HttpSession session) {
         session.invalidate();
         return getSuccessResponseVO(null);
@@ -246,6 +243,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 更新用户头像
+     *
      * @param session
      * @param avatar
      * @return
@@ -262,7 +260,7 @@ public class AccountController extends ABaseController {
         }
         try {
             avatar.transferTo(targetFile);
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("上传头像失败", e);
         }
 
@@ -277,6 +275,7 @@ public class AccountController extends ABaseController {
 
     /**
      * 更新密码
+     *
      * @param session
      * @param password
      * @return
@@ -284,14 +283,13 @@ public class AccountController extends ABaseController {
     @RequestMapping("/updatePassword")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO updatePassword(HttpSession session,
-                                     @VerifyParam(required = true, regex = VerifyRegexEnum.PASSWORD, min = 8, max = 18) String password){
+                                     @VerifyParam(required = true, regex = VerifyRegexEnum.PASSWORD, min = 8, max = 18) String password) {
         SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);
         UserInfo userInfo = new UserInfo();
         userInfo.setPassword(StringTools.encodeByMd5(password));
         userInfoService.updateUserInfoByUserId(userInfo, sessionWebUserDto.getUserId());
         return getSuccessResponseVO(null);
     }
-
 
 
 }
