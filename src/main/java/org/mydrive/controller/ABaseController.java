@@ -4,8 +4,10 @@ import org.mydrive.aspect.GlobalOperatcionAspect;
 import org.mydrive.entity.constants.Constants;
 import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.enums.ResponseCodeEnum;
+import org.mydrive.entity.vo.PaginationResultVO;
 import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.exception.BusinessException;
+import org.mydrive.utils.CopyTools;
 import org.mydrive.utils.StringTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,16 @@ public class ABaseController {
         vo.setInfo(e.getMessage());
         vo.setData(t);
         return vo;
+    }
+
+    protected <S,T> PaginationResultVO<T> convert2PaginationVO(PaginationResultVO<S> result, Class<T> classz){
+        PaginationResultVO<T> resultVO = new PaginationResultVO<>();
+        resultVO.setList(CopyTools.copyList(result.getList(), classz));
+        resultVO.setPageNo(result.getPageNo());
+        resultVO.setPageSize(result.getPageSize());
+        resultVO.setPageTotal(result.getPageTotal());
+        resultVO.setTotalCount(result.getTotalCount());
+        return resultVO;
     }
 
     protected <T> ResponseVO getServerErrorResponseVO(T t) {

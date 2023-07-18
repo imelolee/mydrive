@@ -13,7 +13,10 @@ import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.dto.SysSettingsDto;
 import org.mydrive.entity.dto.UserSpaceDto;
 import org.mydrive.entity.enums.UserStatusEnum;
+import org.mydrive.entity.po.FileInfo;
+import org.mydrive.entity.query.FileInfoQuery;
 import org.mydrive.exception.BusinessException;
+import org.mydrive.mappers.FileInfoMapper;
 import org.springframework.stereotype.Service;
 
 import org.mydrive.entity.enums.PageSize;
@@ -38,6 +41,9 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 	@Resource
 	private RedisComponent redisComponent;
+
+	@Resource
+	private FileInfoMapper<FileInfo, FileInfoQuery> fileInfoMapper;
 
 	@Resource
 	private AppConfig appConfig;
@@ -274,8 +280,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
 		// 用户空间
 		UserSpaceDto userSpaceDto = new UserSpaceDto();
-		// TODO: 查询用户已使用空间
-//		userSpaceDto.setUseSpace();
+		Long useSpace = fileInfoMapper.selectUseSpace(userInfo.getUserId());
+		userSpaceDto.setUseSpace(useSpace);
 		userSpaceDto.setTotalSpace(userInfo.getTotalSpace());
 		redisComponent.saveUserSpaceUse(userInfo.getUserId(), userSpaceDto);
 
