@@ -1,6 +1,8 @@
 package org.mydrive.utils;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.mydrive.entity.constants.Constants;
 import org.mydrive.exception.BusinessException;
 
 
@@ -56,12 +58,12 @@ public class StringTools {
         return false;
     }
 
-    public static final String getRandomNumber(Integer length){
+    public static final String getRandomNumber(Integer length) {
         return RandomStringUtils.random(length, false, true);
     }
 
     public static String encodeByMd5(String orignString) {
-        return isEmpty(orignString) ? null: DigestUtils.md5Hex(orignString);
+        return isEmpty(orignString) ? null : DigestUtils.md5Hex(orignString);
     }
 
     public static boolean pathIsOk(String path) {
@@ -72,6 +74,32 @@ public class StringTools {
             return false;
         }
         return true;
+    }
+
+    public static String rename(String fileName) {
+        String fileNameReal = getFileNameNoSuffix(fileName);
+        String suffix = getFileNameSuffix(fileName);
+        return fileNameReal + "_" + getRandomNumber(Constants.LENGTH_5) + suffix;
+    }
+
+    public static String getFileNameNoSuffix(String fileName) {
+        Integer index = fileName.lastIndexOf(".");
+        if (index == -1) {
+            return fileName;
+        }
+        fileName = fileName.substring(0, index);
+        return fileName;
+
+    }
+
+    public static String getFileNameSuffix(String fileName) {
+        Integer index = fileName.lastIndexOf(".");
+        if (index == -1) {
+            return "";
+        }
+        String suffix = fileName.substring(index);
+        return suffix;
+
     }
 
 }
