@@ -1,11 +1,16 @@
 package org.mydrive.service.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.io.FileUtils;
+import org.aspectj.util.FileUtil;
 import org.mydrive.component.RedisComponent;
+import org.mydrive.entity.config.AppConfig;
 import org.mydrive.entity.constants.Constants;
 import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.dto.UploadResultDto;
@@ -15,6 +20,9 @@ import org.mydrive.entity.po.UserInfo;
 import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.exception.BusinessException;
 import org.mydrive.mappers.UserInfoMapper;
+import org.mydrive.utils.DateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import org.mydrive.entity.query.FileInfoQuery;
@@ -33,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service("fileInfoService")
 public class FileInfoServiceImpl implements FileInfoService {
+    private static final Logger logger = LoggerFactory.getLogger(FileInfoServiceImpl.class);
 
     @Resource
     private FileInfoMapper<FileInfo, FileInfoQuery> fileInfoMapper;
@@ -42,6 +51,9 @@ public class FileInfoServiceImpl implements FileInfoService {
 
     @Resource
     private UserInfoMapper<UserInfo, UserInfoQuery> userInfoMapper;
+
+    @Resource
+    private AppConfig appConfig;
 
     /**
      * 根据条件查询列表
@@ -174,49 +186,124 @@ public class FileInfoServiceImpl implements FileInfoService {
     @Transactional(rollbackFor = Exception.class)
     public UploadResultDto uploadFile(SessionWebUserDto webUserDto, String fileId, MultipartFile file,
                                       String fileName, String filePid, String fileMd5, Integer chunkIndex, Integer chunks) {
-
         UploadResultDto resultDto = new UploadResultDto();
-        if (StringTools.isEmpty(fileId)) {
-            fileId = StringTools.getRandomNumber(Constants.LENGTH_10);
-        }
-        resultDto.setFileId(fileId);
-        Date currentDate = new Date();
-        UserSpaceDto spaceDto = redisComponent.getUserSpaceUse(webUserDto.getUserId());
+        Boolean uploadSuccess = true;
+        File tempFileFolder = null;
 
-        if (chunkIndex == 0) {
-            FileInfoQuery infoQuery = new FileInfoQuery();
-            infoQuery.setFileMd5(fileMd5);
-            infoQuery.setSimplePage(new SimplePage(0, 1));
-            infoQuery.setStatus(FileStatusEnum.USING.getStatus());
-            List<FileInfo> dbFileList = this.fileInfoMapper.selectList(infoQuery);
-            // 秒传
-            if (!dbFileList.isEmpty()) {
-                FileInfo dbFile = dbFileList.get(0);
-                // 判断文件使用大小
-                if (dbFile.getFileSize() + spaceDto.getUseSpace() > spaceDto.getTotalSpace()) {
-                    throw new BusinessException(ResponseCodeEnum.CODE_904);
+        try {
+
+            if (StringTools.isEmpty(fileId)) {
+                fileId = StringTools.getRandomString(Constants.LENGTH_10);
+            }
+            resultDto.setFileId(fileId);
+            Date currentDate = new Date();
+            UserSpaceDto spaceDto = redisComponent.getUserSpaceUse(webUserDto.getUserId());
+
+            if (chunkIndex == 0) {
+                FileInfoQuery infoQuery = new FileInfoQuery();
+                infoQuery.setFileMd5(fileMd5);
+                infoQuery.setSimplePage(new SimplePage(0, 1));
+                infoQuery.setStatus(FileStatusEnum.USING.getStatus());
+                List<FileInfo> dbFileList = this.fileInfoMapper.selectList(infoQuery);
+                // 秒传
+                if (!dbFileList.isEmpty()) {
+                    FileInfo dbFile = dbFileList.get(0);
+                    // 判断文件使用大小
+                    if (dbFile.getFileSize() + spaceDto.getUseSpace() > spaceDto.getTotalSpace()) {
+                        throw new BusinessException(ResponseCodeEnum.CODE_904);
+                    }
+                    dbFile.setFileId(fileId);
+                    dbFile.setFilePid(filePid);
+                    dbFile.setUserId(webUserDto.getUserId());
+                    dbFile.setCreateTime(currentDate);
+                    dbFile.setLastUpdateTime(currentDate);
+                    dbFile.setStatus(FileStatusEnum.USING.getStatus());
+                    dbFile.setDelFlag(FileDelFlagEnum.USING.getFlag());
+                    dbFile.setFileMd5(fileMd5);
+                    // 文件重命名
+                    fileName = autoRename(filePid, webUserDto.getUserId(), fileName);
+                    dbFile.setFileName(fileName);
+                    this.fileInfoMapper.insert(dbFile);
+
+                    resultDto.setStatus(UploadStatusEnum.UPLOAD_SECONDS.getCode());
+                    // 更新用户使用空间
+                    updateUseSpace(webUserDto, dbFile.getFileSize());
+
+                    return resultDto;
                 }
-                dbFile.setFileId(fileId);
-                dbFile.setFilePid(filePid);
-                dbFile.setUserId(webUserDto.getUserId());
-                dbFile.setCreateTime(currentDate);
-                dbFile.setLastUpdateTime(currentDate);
-                dbFile.setStatus(FileStatusEnum.USING.getStatus());
-                dbFile.setDelFlag(FileDelFlagEnum.USING.getFlag());
-                dbFile.setFileMd5(fileMd5);
-                // 文件重命名
-                fileName = autoRename(filePid, webUserDto.getUserId(), fileName);
-                dbFile.setFileName(fileName);
-                this.fileInfoMapper.insert(dbFile);
+            }
 
-                resultDto.setStatus(UploadStatusEnum.UPLOAD_SECONDS.getCode());
-                // 更新用户使用空间
-                updateUseSpace(webUserDto, dbFile.getFileSize());
+            // 判断磁盘空间
+            Long currentTempSize = redisComponent.getFileTempSize(webUserDto.getUserId(), fileId);
+            if (file.getSize() + currentTempSize + spaceDto.getUseSpace() > spaceDto.getTotalSpace()) {
+                throw new BusinessException(ResponseCodeEnum.CODE_904);
+            }
 
+            // 暂存临时目录
+            String tempFolderName = appConfig.getProjectFolder() + Constants.FILE_FOLDER_TEMP;
+            String currentUserFolderName = webUserDto.getUserId() + fileId;
+
+            tempFileFolder = new File(tempFolderName + currentUserFolderName);
+            if (!tempFileFolder.exists()) {
+                tempFileFolder.mkdirs();
+            }
+
+            File newFile = new File(tempFileFolder.getPath() + "/" + chunkIndex);
+            file.transferTo(newFile);
+            if (chunkIndex < chunks - 1) {
+                resultDto.setStatus(UploadStatusEnum.UPLOADING.getCode());
+                // 保存临时大小
+                redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
                 return resultDto;
             }
-        }
+            // 最后一个分片上传完成，记录数据库，异步合并
+            String month = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMM.getPattern());
+            String fileSuffix = StringTools.getFileNameSuffix(fileName);
+            // 真实文件名
+            String realFileName = currentUserFolderName + fileSuffix;
+            FileTypeEnum fileTypeEnum = FileTypeEnum.getFileTypeBySuffix(fileSuffix);
+            // 自动重命名
+            fileName = autoRename(filePid, webUserDto.getUserId(), fileName);
 
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setFileId(fileId);
+            fileInfo.setUserId(webUserDto.getUserId());
+            fileInfo.setFileMd5(fileMd5);
+            fileInfo.setFileName(fileName);
+            fileInfo.setFilePath(month + "/" + realFileName);
+            fileInfo.setFilePid(filePid);
+            fileInfo.setCreateTime(currentDate);
+            fileInfo.setLastUpdateTime(currentDate);
+            fileInfo.setFileCategory(fileTypeEnum.getCategory().getCategory());
+            fileInfo.setFileType(fileTypeEnum.getType());
+            fileInfo.setStatus(FileStatusEnum.TRANSFER.getStatus());
+            fileInfo.setFolderType(FileFolderTypeEnum.FILE.getType());
+            fileInfo.setDelFlag(FileDelFlagEnum.USING.getFlag());
+            this.fileInfoMapper.insert(fileInfo);
+
+            Long totalSize = redisComponent.getFileTempSize(webUserDto.getUserId(), fileId);
+            updateUseSpace(webUserDto, totalSize);
+
+            resultDto.setStatus(UploadStatusEnum.UPLOAD_FINISH.getCode());
+
+            return resultDto;
+
+        } catch (BusinessException e) {
+            logger.error("文件上传失败", e);
+            uploadSuccess = false;
+            throw e;
+        } catch (Exception e) {
+            logger.error("文件上传失败", e);
+            uploadSuccess = false;
+        } finally {
+            if (!uploadSuccess && tempFileFolder != null) {
+                try {
+                    FileUtils.deleteDirectory(tempFileFolder);
+                } catch (IOException e) {
+                    logger.error("删除临时目录失败", e);
+                }
+            }
+        }
         return resultDto;
     }
 
