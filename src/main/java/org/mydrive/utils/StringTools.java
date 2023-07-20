@@ -62,6 +62,10 @@ public class StringTools {
         return RandomStringUtils.random(length, false, true);
     }
 
+    public static final String getRandomString(Integer length) {
+        return RandomStringUtils.random(length, true, true);
+    }
+
     public static String encodeByMd5(String orignString) {
         return isEmpty(orignString) ? null : DigestUtils.md5Hex(orignString);
     }
@@ -79,7 +83,7 @@ public class StringTools {
     public static String rename(String fileName) {
         String fileNameReal = getFileNameNoSuffix(fileName);
         String suffix = getFileNameSuffix(fileName);
-        return fileNameReal + "_" + getRandomNumber(Constants.LENGTH_5) + suffix;
+        return fileNameReal + "_" + getRandomString(Constants.LENGTH_5) + suffix;
     }
 
     public static String getFileNameNoSuffix(String fileName) {

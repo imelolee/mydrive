@@ -11,6 +11,8 @@ public class Constants {
 
     public static final String FILE_FOLDER_FILE = "/file/";
 
+    public static final String FILE_FOLDER_TEMP = "/temp/";
+
     public static final String FILE_FOLDER_AVATAR = "avatar/";
 
     public static final String AVATAR_SUFFIX = ".jpg";
@@ -24,7 +26,12 @@ public class Constants {
 
     public static final String REDIS_KEY_USER_SPACE_USE = "mydrive:user:spaceuse:";
 
+    public static final String REDIS_KEY_USER_FILE_TEMP_SIZE = "mydrive:user:file:temp:";
+
     public static final Integer REDIS_KEY_EX_ONE_MIN = 60;
+
+    public static final Integer REDIS_KEY_EX_ONE_HOUR = REDIS_KEY_EX_ONE_MIN * 60;
+
 
     public static final Integer REDIS_KEY_EX_ONE_DAY = REDIS_KEY_EX_ONE_MIN * 60 * 24;
 
