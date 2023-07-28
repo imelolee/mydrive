@@ -1,9 +1,8 @@
 package org.mydrive.entity.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import org.mydrive.entity.enums.DateTimePatternEnum;
-import org.mydrive.utils.DateUtil;
+import org.mydrive.utils.DateUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -166,6 +165,6 @@ public class UserInfo implements Serializable {
 
 	@Override
 	public String toString (){
-		return "用户id:"+(userId == null ? "空" : userId)+"，用户昵称:"+(nickName == null ? "空" : nickName)+"，邮箱:"+(email == null ? "空" : email)+"，qq账户id:"+(qqOpenId == null ? "空" : qqOpenId)+"，qq头像:"+(qqAvatar == null ? "空" : qqAvatar)+"，密码:"+(password == null ? "空" : password)+"，加入时间:"+(joinTime == null ? "空" : DateUtil.format(joinTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()))+"，最后登录时间:"+(lastLoginTime == null ? "空" : DateUtil.format(lastLoginTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()))+"，账号状态: 0-禁用，1-启用:"+(status == null ? "空" : status)+"，使用空间:"+(useSpace == null ? "空" : useSpace)+"，总空间:"+(totalSpace == null ? "空" : totalSpace);
+		return "用户id:"+(userId == null ? "空" : userId)+"，用户昵称:"+(nickName == null ? "空" : nickName)+"，邮箱:"+(email == null ? "空" : email)+"，qq账户id:"+(qqOpenId == null ? "空" : qqOpenId)+"，qq头像:"+(qqAvatar == null ? "空" : qqAvatar)+"，密码:"+(password == null ? "空" : password)+"，加入时间:"+(joinTime == null ? "空" : DateUtils.format(joinTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()))+"，最后登录时间:"+(lastLoginTime == null ? "空" : DateUtils.format(lastLoginTime, DateTimePatternEnum.YYYY_MM_DD_HH_MM_SS.getPattern()))+"，账号状态: 0-禁用，1-启用:"+(status == null ? "空" : status)+"，使用空间:"+(useSpace == null ? "空" : useSpace)+"，总空间:"+(totalSpace == null ? "空" : totalSpace);
 	}
 }
