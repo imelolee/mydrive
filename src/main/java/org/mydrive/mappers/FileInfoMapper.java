@@ -42,7 +42,13 @@ public interface FileInfoMapper<T,P> extends BaseMapper<T,P> {
 	 */
 	 T selectByUserId(@Param("userId") String userId);
 
+	 T selectByFileIdAndUserId(@Param("fileId") String fileId, @Param("userId") String userId);
+
 	 Long selectUseSpace(@Param("userId") String userId);
+
+	 void updateByFileIdAndUserId(@Param("fileId") String fileId, @Param("userId") String userId, @Param("bean") T t);
+
+	 void updateFileStatusWithOldStatus(@Param("fileId") String fileId, @Param("userId") String userId, @Param("bean") T t, @Param("oldStatus") Integer oldStatus);
 
 
 

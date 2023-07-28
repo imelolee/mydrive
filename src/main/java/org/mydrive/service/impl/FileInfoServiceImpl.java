@@ -2,13 +2,13 @@ package org.mydrive.service.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.io.FileUtils;
-import org.aspectj.util.FileUtil;
 import org.mydrive.component.RedisComponent;
 import org.mydrive.entity.config.AppConfig;
 import org.mydrive.entity.constants.Constants;
@@ -20,9 +20,11 @@ import org.mydrive.entity.po.UserInfo;
 import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.exception.BusinessException;
 import org.mydrive.mappers.UserInfoMapper;
-import org.mydrive.utils.DateUtil;
+import org.mydrive.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import org.mydrive.entity.query.FileInfoQuery;
@@ -33,6 +35,8 @@ import org.mydrive.mappers.FileInfoMapper;
 import org.mydrive.service.FileInfoService;
 import org.mydrive.utils.StringTools;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -54,6 +58,10 @@ public class FileInfoServiceImpl implements FileInfoService {
 
     @Resource
     private AppConfig appConfig;
+
+    @Resource
+    @Lazy
+    private FileInfoServiceImpl fileInfoService;
 
     /**
      * 根据条件查询列表
@@ -256,8 +264,10 @@ public class FileInfoServiceImpl implements FileInfoService {
                 redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
                 return resultDto;
             }
+            redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
+
             // 最后一个分片上传完成，记录数据库，异步合并
-            String month = DateUtil.format(new Date(), DateTimePatternEnum.YYYYMM.getPattern());
+            String month = DateUtils.format(new Date(), DateTimePatternEnum.YYYYMM.getPattern());
             String fileSuffix = StringTools.getFileNameSuffix(fileName);
             // 真实文件名
             String realFileName = currentUserFolderName + fileSuffix;
@@ -270,6 +280,7 @@ public class FileInfoServiceImpl implements FileInfoService {
             fileInfo.setUserId(webUserDto.getUserId());
             fileInfo.setFileMd5(fileMd5);
             fileInfo.setFileName(fileName);
+//            fileInfo.setFileSize(file.getSize());
             fileInfo.setFilePath(month + "/" + realFileName);
             fileInfo.setFilePid(filePid);
             fileInfo.setCreateTime(currentDate);
@@ -285,6 +296,13 @@ public class FileInfoServiceImpl implements FileInfoService {
             updateUseSpace(webUserDto, totalSize);
 
             resultDto.setStatus(UploadStatusEnum.UPLOAD_FINISH.getCode());
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    fileInfoService.transferFile(fileInfo.getFileId(), webUserDto);
+                }
+            });
+
 
             return resultDto;
 
@@ -334,6 +352,123 @@ public class FileInfoServiceImpl implements FileInfoService {
         UserSpaceDto spaceDto = redisComponent.getUserSpaceUse(webUserDto.getUserId());
         spaceDto.setUseSpace(spaceDto.getUseSpace() + useSize);
         redisComponent.saveUserSpaceUse(webUserDto.getUserId(), spaceDto);
+
+    }
+
+    /**
+     * 文件转码
+     */
+    @Async
+    public void transferFile(String fileId, SessionWebUserDto webUserDto) {
+        Boolean transferSuccess = true;
+        String targetFilePath = null;
+        String cover = null;
+        FileTypeEnum fileTypeEnum = null;
+        FileInfo fileInfo = this.fileInfoMapper.selectByFileIdAndUserId(fileId, webUserDto.getUserId());
+        try {
+            if (fileInfo == null || !FileStatusEnum.TRANSFER.getStatus().equals(fileInfo.getStatus())) {
+                return;
+            }
+            // 临时目录
+            String tempFolderName = appConfig.getProjectFolder() + Constants.FILE_FOLDER_TEMP;
+            String currentUserFolderName = webUserDto.getUserId() + fileId;
+            File fileFolder = new File(tempFolderName + currentUserFolderName);
+
+            String fileSuffix = StringTools.getFileNameSuffix(fileInfo.getFileName());
+            String month = DateUtils.format(fileInfo.getCreateTime(), DateTimePatternEnum.YYYYMM.getPattern());
+            // 目标目录
+            String targetFolerName = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE;
+            File targetFolder = new File(targetFolerName + "/" + month);
+            if (targetFolder.exists()) {
+                targetFolder.mkdirs();
+            }
+            // 真实的文件名
+            String realFileName = currentUserFolderName + fileSuffix;
+            targetFilePath = targetFolder.getPath() + "/" + realFileName;
+
+            // 合并文件
+            union(fileFolder.getPath(), targetFilePath, fileInfo.getFileName(), true);
+            // 视频文件切割
+            fileTypeEnum = FileTypeEnum.getFileTypeBySuffix(fileSuffix);
+            if (FileTypeEnum.VIDEO == fileTypeEnum){
+
+            }else if (FileTypeEnum.IMAGE == fileTypeEnum){
+
+            }
+        } catch (Exception e) {
+            logger.error("文件转码失败,文件id {}, userId {}", fileId, webUserDto.getUserId(), e);
+            transferSuccess = false;
+        } finally {
+            FileInfo updateInfo = new FileInfo();
+            updateInfo.setFileSize(new File(targetFilePath).length());
+            updateInfo.setFileCover(cover);
+            updateInfo.setStatus(transferSuccess ? FileStatusEnum.USING.getStatus() : FileStatusEnum.TRANSFER_FAIL.getStatus());
+            fileInfoMapper.updateFileStatusWithOldStatus(fileId, webUserDto.getUserId(), updateInfo, FileStatusEnum.TRANSFER.getStatus());
+        }
+    }
+
+    /**
+     * 分片合并
+     */
+    private void union(String dirPath, String toFilePath, String fileName, Boolean delSource) {
+        File dir = new File(dirPath);
+        if (!dir.exists()) {
+            throw new BusinessException("目录不存在");
+        }
+        File[] fileList = dir.listFiles();
+        File targetFile = new File(toFilePath);
+        RandomAccessFile writeFile = null;
+        try {
+            writeFile = new RandomAccessFile(targetFile, "rw");
+            byte[] b = new byte[1024 * 10];
+            for (int i = 0; i < fileList.length; i++) {
+                int len = -1;
+                File chunkFile = new File(dirPath + "/" + i);
+                RandomAccessFile readFile = null;
+                try {
+                    readFile = new RandomAccessFile(chunkFile, "r");
+                    while ((len = readFile.read(b)) != -1) {
+                        writeFile.write(b, 0, len);
+                    }
+                } catch (Exception e) {
+                    logger.error("合并分片失败", e);
+                    throw new BusinessException("合并分片失败");
+                } finally {
+                    readFile.close();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("合并文件{}失败", fileName, e);
+            throw new BusinessException("合并文件" + fileName + "失败");
+        } finally {
+            if (null != writeFile) {
+                try {
+                    writeFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (delSource && dir.exists()) {
+                try {
+                    FileUtils.deleteDirectory(dir);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void cutFile4Video(String fileId, String videoFilePath){
+        // 创建同名切片目录
+        File tsFolder = new File(videoFilePath.substring(0,videoFilePath.lastIndexOf(".")));
+        if (!tsFolder.exists()){
+            tsFolder.mkdirs();
+        }
+        final String CMD_TRANSFER_2TS = "ffmpeg -y -i %s -vcodec copy -acodec copy -vbsf h264 mp4toannexb %s";
+        final String CMD_CUT_TS = "ffmpeg -i %s -c copy -map 0 -f segment -segment_list %s -segment_time 30 %s/%s_%%4d.ts";
+        String tsPath = tsFolder + "/" + Constants.TS_NAME;
+        // 生成ts
+        String cmd = String.format(CMD_TRANSFER_2TS, videoFilePath, tsPath);
 
     }
 }
