@@ -21,6 +21,8 @@ import org.mydrive.entity.query.UserInfoQuery;
 import org.mydrive.exception.BusinessException;
 import org.mydrive.mappers.UserInfoMapper;
 import org.mydrive.utils.DateUtils;
+import org.mydrive.utils.ProcessUtils;
+import org.mydrive.utils.ScaleFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -390,10 +392,20 @@ public class FileInfoServiceImpl implements FileInfoService {
             union(fileFolder.getPath(), targetFilePath, fileInfo.getFileName(), true);
             // 视频文件切割
             fileTypeEnum = FileTypeEnum.getFileTypeBySuffix(fileSuffix);
-            if (FileTypeEnum.VIDEO == fileTypeEnum){
-
-            }else if (FileTypeEnum.IMAGE == fileTypeEnum){
-
+            if (FileTypeEnum.VIDEO == fileTypeEnum) {
+                cutFile4Video(fileId, targetFilePath);
+                // 视频生成缩略图
+                cover = month + "/" + currentUserFolderName + Constants.IMAGE_PNG_SUFFIX;
+                String coverPath = targetFolerName + "/" + cover;
+                ScaleFilter.createCover4Video(new File(targetFilePath), Constants.LENGTH_150, new File(coverPath));
+            } else if (FileTypeEnum.IMAGE == fileTypeEnum) {
+                // 图片缩略图
+                cover = month + "/" + realFileName.replace(".", "_.");
+                String coverPath = targetFolerName + "/" + cover;
+                Boolean created = ScaleFilter.createThumbnailWidthFFmpeg(new File(targetFilePath), Constants.LENGTH_150, new File(coverPath), false);
+                if (!created){
+                    FileUtils.copyFile(new File(targetFilePath), new File(coverPath));
+                }
             }
         } catch (Exception e) {
             logger.error("文件转码失败,文件id {}, userId {}", fileId, webUserDto.getUserId(), e);
@@ -458,17 +470,23 @@ public class FileInfoServiceImpl implements FileInfoService {
         }
     }
 
-    private void cutFile4Video(String fileId, String videoFilePath){
+    private void cutFile4Video(String fileId, String videoFilePath) {
         // 创建同名切片目录
-        File tsFolder = new File(videoFilePath.substring(0,videoFilePath.lastIndexOf(".")));
-        if (!tsFolder.exists()){
+        File tsFolder = new File(videoFilePath.substring(0, videoFilePath.lastIndexOf(".")));
+        if (!tsFolder.exists()) {
             tsFolder.mkdirs();
         }
         final String CMD_TRANSFER_2TS = "ffmpeg -y -i %s -vcodec copy -acodec copy -vbsf h264 mp4toannexb %s";
         final String CMD_CUT_TS = "ffmpeg -i %s -c copy -map 0 -f segment -segment_list %s -segment_time 30 %s/%s_%%4d.ts";
         String tsPath = tsFolder + "/" + Constants.TS_NAME;
-        // 生成ts
+        // 生成.ts
         String cmd = String.format(CMD_TRANSFER_2TS, videoFilePath, tsPath);
+        ProcessUtils.executeCommand(cmd, false);
+        // 生成索引文件.m3u8和切片.ts
+        cmd = String.format(CMD_CUT_TS, tsPath, tsFolder.getPath() + "/" + Constants.M3U8_NAME, tsFolder.getPath(), fileId);
+        ProcessUtils.executeCommand(cmd, false);
+        // 删除index.tx
+        new File(tsPath).delete();
 
     }
 }
