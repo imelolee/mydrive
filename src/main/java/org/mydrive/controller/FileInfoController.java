@@ -14,12 +14,14 @@ import org.mydrive.entity.vo.FileInfoVO;
 import org.mydrive.entity.vo.PaginationResultVO;
 import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.service.FileInfoService;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -27,7 +29,7 @@ import javax.servlet.http.HttpSession;
  */
 @RestController("fileInfoController")
 @RequestMapping("/file")
-public class FileInfoController extends ABaseController {
+public class FileInfoController extends CommonFileController {
 
     @Resource
     private FileInfoService fileInfoService;
@@ -70,5 +72,11 @@ public class FileInfoController extends ABaseController {
         return getSuccessResponseVO(resultDto);
     }
 
+
+    @RequestMapping("/getImage/{imageFolder}/{imageName}")
+    @GlobalInterceptor(checkParams = true)
+    public void getImage(HttpServletResponse response, @PathVariable("imageFolder") String imageFolder, @PathVariable("imageName") String imageName){
+        super.getImage(response, imageFolder, imageName);
+    }
 
 }
