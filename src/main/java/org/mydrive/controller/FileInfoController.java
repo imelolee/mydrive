@@ -79,4 +79,18 @@ public class FileInfoController extends CommonFileController {
         super.getImage(response, imageFolder, imageName);
     }
 
+    @RequestMapping("/ts/getVideoInfo/{fileId}")
+    @GlobalInterceptor(checkParams = true)
+    public void getVideo(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId){
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        super.getFile(response, fileId, webUserDto.getUserId());
+    }
+
+    @RequestMapping("/getFile/{fileId}")
+    @GlobalInterceptor(checkParams = true)
+    public void getFile(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId){
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        super.getFile(response, fileId, webUserDto.getUserId());
+    }
+
 }

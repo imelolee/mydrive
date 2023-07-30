@@ -48,7 +48,7 @@ public class ABaseController {
         return vo;
     }
 
-    protected <S,T> PaginationResultVO<T> convert2PaginationVO(PaginationResultVO<S> result, Class<T> classz){
+    protected <S, T> PaginationResultVO<T> convert2PaginationVO(PaginationResultVO<S> result, Class<T> classz) {
         PaginationResultVO<T> resultVO = new PaginationResultVO<>();
         resultVO.setList(CopyTools.copyList(result.getList(), classz));
         resultVO.setPageNo(result.getPageNo());

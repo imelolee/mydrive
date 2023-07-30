@@ -153,6 +153,14 @@ public class FileInfoServiceImpl implements FileInfoService {
     }
 
     /**
+     * 根据FileId和UserId获取对象
+     */
+    @Override
+    public FileInfo getFileInfoByFileIdAndUserId(String fileId, String userId){
+        return this.fileInfoMapper.selectByFileIdAndUserId(fileId, userId);
+    }
+
+    /**
      * 根据FileId修改
      */
     @Override
@@ -191,6 +199,8 @@ public class FileInfoServiceImpl implements FileInfoService {
     public Integer deleteFileInfoByUserId(String userId) {
         return this.fileInfoMapper.deleteByUserId(userId);
     }
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)

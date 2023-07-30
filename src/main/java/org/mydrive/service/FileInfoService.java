@@ -60,6 +60,11 @@ public interface FileInfoService {
      */
     FileInfo getFileInfoByFileId(String fileId);
 
+    /**
+     * 根据FileId和UserId获取对象
+     */
+    FileInfo getFileInfoByFileIdAndUserId(String fileId, String userId);
+
 
     /**
      * 根据FileId修改
