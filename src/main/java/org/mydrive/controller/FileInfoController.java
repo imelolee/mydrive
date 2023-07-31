@@ -8,12 +8,15 @@ import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.dto.UploadResultDto;
 import org.mydrive.entity.enums.FileCategoryEnum;
 import org.mydrive.entity.enums.FileDelFlagEnum;
+import org.mydrive.entity.enums.FileFolderTypeEnum;
 import org.mydrive.entity.query.FileInfoQuery;
 import org.mydrive.entity.po.FileInfo;
 import org.mydrive.entity.vo.FileInfoVO;
 import org.mydrive.entity.vo.PaginationResultVO;
 import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.service.FileInfoService;
+import org.mydrive.utils.CopyTools;
+import org.mydrive.utils.StringTools;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -75,22 +78,81 @@ public class FileInfoController extends CommonFileController {
 
     @RequestMapping("/getImage/{imageFolder}/{imageName}")
     @GlobalInterceptor(checkParams = true)
-    public void getImage(HttpServletResponse response, @PathVariable("imageFolder") String imageFolder, @PathVariable("imageName") String imageName){
+    public void getImage(HttpServletResponse response, @PathVariable("imageFolder") String imageFolder, @PathVariable("imageName") String imageName) {
         super.getImage(response, imageFolder, imageName);
     }
 
     @RequestMapping("/ts/getVideoInfo/{fileId}")
     @GlobalInterceptor(checkParams = true)
-    public void getVideo(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId){
+    public void getVideo(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId) {
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         super.getFile(response, fileId, webUserDto.getUserId());
     }
 
     @RequestMapping("/getFile/{fileId}")
     @GlobalInterceptor(checkParams = true)
-    public void getFile(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId){
+    public void getFile(HttpServletResponse response, HttpSession session, @PathVariable("fileId") String fileId) {
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         super.getFile(response, fileId, webUserDto.getUserId());
     }
 
+    @RequestMapping("/newFolder")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO newFolder(HttpSession session,
+                                @VerifyParam(required = true) String filePid,
+                                @VerifyParam(required = true) String fileName) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        FileInfo fileInfo = fileInfoService.newFolder(filePid, webUserDto.getUserId(), fileName);
+
+        return getSuccessResponseVO(CopyTools.copy(fileInfo, FileInfoVO.class));
+    }
+
+    @RequestMapping("/getFolderInfo")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO getFolderInfo(HttpSession session,
+                                    @VerifyParam(required = true) String path) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+
+        return super.getFolderInfo(path, webUserDto.getUserId());
+    }
+
+    @RequestMapping("/rename")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO rename(HttpSession session,
+                             @VerifyParam(required = true) String fileId,
+                             @VerifyParam(required = true) String fileName) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        FileInfo fileInfo = fileInfoService.rename(fileId, webUserDto.getUserId(), fileName);
+        return getSuccessResponseVO(CopyTools.copy(fileInfo, FileInfoVO.class));
+    }
+
+    @RequestMapping("/loadAllFolder")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO loadAllFolder(HttpSession session,
+                                    @VerifyParam(required = true) String filePid,
+                                    String currentFileIds) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(webUserDto.getUserId());
+        fileInfoQuery.setFilePid(filePid);
+        fileInfoQuery.setFolderType(FileFolderTypeEnum.FOLDER.getType());
+        if (!StringTools.isEmpty(currentFileIds)) {
+            fileInfoQuery.setExcludeFileIdArray(currentFileIds.split(","));
+        }
+        fileInfoQuery.setDelFlag(FileDelFlagEnum.USING.getFlag());
+        fileInfoQuery.setOrderBy("create_time desc");
+        List<FileInfo> fileInfoList = fileInfoService.findListByParam(fileInfoQuery);
+
+        return getSuccessResponseVO(CopyTools.copyList(fileInfoList, FileInfoVO.class));
+    }
+
+    @RequestMapping("/changeFileFolder")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO changeFileFolder(HttpSession session,
+                                       @VerifyParam(required = true) String fileIds,
+                                       @VerifyParam(required = true) String filePid) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        fileInfoService.changeFileFolder(fileIds, filePid, webUserDto.getUserId());
+        return getSuccessResponseVO(null);
+    }
 }

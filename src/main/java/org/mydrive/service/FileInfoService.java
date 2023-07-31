@@ -102,4 +102,19 @@ public interface FileInfoService {
     UploadResultDto uploadFile(SessionWebUserDto webUserDto, String fileId, MultipartFile file,
                                String fileName, String filePid, String fileMd5, Integer chunkIndex, Integer chunks);
 
+    /**
+     * 新建文件夹
+     */
+    FileInfo newFolder(String filePid, String userId, String folderName);
+
+    /**
+     * 重命名
+     */
+    FileInfo rename(String fileId, String userId, String fileName);
+
+    /**
+     * 更改文件夹
+     */
+    void changeFileFolder(String fileIds, String filePid, String userId);
+
 }
