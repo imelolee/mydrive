@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -156,7 +159,7 @@ public class FileInfoServiceImpl implements FileInfoService {
      * 根据FileId和UserId获取对象
      */
     @Override
-    public FileInfo getFileInfoByFileIdAndUserId(String fileId, String userId){
+    public FileInfo getFileInfoByFileIdAndUserId(String fileId, String userId) {
         return this.fileInfoMapper.selectByFileIdAndUserId(fileId, userId);
     }
 
@@ -199,7 +202,6 @@ public class FileInfoServiceImpl implements FileInfoService {
     public Integer deleteFileInfoByUserId(String userId) {
         return this.fileInfoMapper.deleteByUserId(userId);
     }
-
 
 
     @Override
@@ -413,7 +415,7 @@ public class FileInfoServiceImpl implements FileInfoService {
                 cover = month + "/" + realFileName.replace(".", "_.");
                 String coverPath = targetFolerName + "/" + cover;
                 Boolean created = ScaleFilter.createThumbnailWidthFFmpeg(new File(targetFilePath), Constants.LENGTH_150, new File(coverPath), false);
-                if (!created){
+                if (!created) {
                     FileUtils.copyFile(new File(targetFilePath), new File(coverPath));
                 }
             }
@@ -498,5 +500,114 @@ public class FileInfoServiceImpl implements FileInfoService {
         // 删除index.tx
         new File(tsPath).delete();
 
+    }
+
+    /**
+     * 新建文件夹
+     */
+    @Override
+    public FileInfo newFolder(String filePid, String userId, String folderName) {
+        checkFileName(filePid, userId, folderName, FileFolderTypeEnum.FOLDER.getType());
+        Date currentDate = new Date();
+        FileInfo fileInfo = new FileInfo();
+        fileInfo.setFileId(StringTools.getRandomString(Constants.LENGTH_10));
+        fileInfo.setUserId(userId);
+        fileInfo.setFilePid(filePid);
+        fileInfo.setFileName(folderName);
+        fileInfo.setFolderType(FileFolderTypeEnum.FOLDER.getType());
+        fileInfo.setCreateTime(currentDate);
+        fileInfo.setLastUpdateTime(currentDate);
+        fileInfo.setStatus(FileStatusEnum.USING.getStatus());
+        fileInfo.setDelFlag(FileDelFlagEnum.USING.getFlag());
+        this.fileInfoMapper.insert(fileInfo);
+
+        return fileInfo;
+    }
+
+    private void checkFileName(String filePid, String userId, String fileName, Integer folderType) {
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setFolderType(folderType);
+        fileInfoQuery.setFileName(fileName);
+        fileInfoQuery.setFilePid(filePid);
+        fileInfoQuery.setUserId(userId);
+        Integer count = this.fileInfoMapper.selectCount(fileInfoQuery);
+        if (count > 0) {
+            throw new BusinessException("此目录下存在同名文件，请修改名称");
+        }
+    }
+
+    /**
+     * 重命名
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public FileInfo rename(String fileId, String userId, String fileName) {
+        FileInfo fileInfo = this.fileInfoMapper.selectByFileIdAndUserId(fileId, userId);
+        if (null == fileInfo) {
+            throw new BusinessException("文件不存在");
+        }
+
+        String filePid = fileInfo.getFilePid();
+        checkFileName(filePid, userId, fileName, fileInfo.getFolderType());
+        // 获取文件后缀
+        if (FileFolderTypeEnum.FILE.getType().equals(fileInfo.getFolderType())) {
+            fileName = fileName + StringTools.getFileNameSuffix(fileInfo.getFileName());
+        }
+        Date currentDate = new Date();
+        FileInfo dbInfo = new FileInfo();
+        dbInfo.setFileName(fileName);
+        dbInfo.setLastUpdateTime(currentDate);
+        this.fileInfoMapper.updateByFileIdAndUserId(dbInfo, fileId, userId);
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setFilePid(filePid);
+        fileInfoQuery.setUserId(userId);
+        fileInfoQuery.setFileName(fileName);
+        Integer count = this.fileInfoMapper.selectCount(fileInfoQuery);
+        if (count > 1) {
+            throw new BusinessException("文件名" + fileName + "已存在");
+        }
+        fileInfo.setFileName(fileName);
+        fileInfo.setLastUpdateTime(currentDate);
+
+        return fileInfo;
+    }
+
+    @Override
+    public void changeFileFolder(String fileIds, String filePid, String userId) {
+        if (fileIds.equals(filePid)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (!Constants.ZERO_STRING.equals(filePid)) {
+            FileInfo fileInfo = this.getFileInfoByFileIdAndUserId(filePid, userId);
+            if (null == fileInfo || !FileDelFlagEnum.USING.getFlag().equals(fileInfo.getDelFlag())) {
+                throw new BusinessException(ResponseCodeEnum.CODE_600);
+            }
+        }
+        String[] fileIdArray = fileIds.split(",");
+
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setFilePid(filePid);
+        fileInfoQuery.setUserId(userId);
+        List<FileInfo> dbFileList = this.findListByParam(fileInfoQuery);
+        Map<String, FileInfo> dbFileNameMap = dbFileList.stream().collect(Collectors.toMap(FileInfo::getFileName, Function.identity(), (data1, data2) -> data2));
+        // 查询选中的文件
+        fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(userId);
+        fileInfoQuery.setFileIdArray(fileIdArray);
+        List<FileInfo> selectFileList = this.findListByParam(fileInfoQuery);
+        // 将所选文件重命名
+        for (FileInfo item : selectFileList) {
+            Date currentDate = new Date();
+            FileInfo rootFileInfo = dbFileNameMap.get(item.getFileName());
+            // 文件名已经存在，重命名被还原的文件名
+            FileInfo updateInfo = new FileInfo();
+            if (rootFileInfo != null) {
+                String fileName = StringTools.rename(item.getFileName());
+                updateInfo.setFileName(fileName);
+            }
+            updateInfo.setFilePid(filePid);
+            updateInfo.setLastUpdateTime(currentDate);
+            this.fileInfoMapper.updateByFileIdAndUserId(updateInfo, item.getFileId(), userId);
+        }
     }
 }

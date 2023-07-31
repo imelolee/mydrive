@@ -1,6 +1,8 @@
 package org.mydrive.entity.constants;
 
 public class Constants {
+    public static final String ZERO_STRING = "0";
+
     public static final Integer ZERO = 0;
 
     public static final Integer LENGTH_5 = 5;

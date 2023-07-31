@@ -1,15 +1,23 @@
 package org.mydrive.controller;
 
+
+import org.apache.commons.lang3.StringUtils;
 import org.mydrive.entity.config.AppConfig;
 import org.mydrive.entity.constants.Constants;
 import org.mydrive.entity.enums.FileCategoryEnum;
+import org.mydrive.entity.enums.FileFolderTypeEnum;
 import org.mydrive.entity.po.FileInfo;
+import org.mydrive.entity.query.FileInfoQuery;
+import org.mydrive.entity.vo.FileInfoVO;
+import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.service.FileInfoService;
+import org.mydrive.utils.CopyTools;
 import org.mydrive.utils.StringTools;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.util.List;
 
 public class CommonFileController extends ABaseController {
     @Resource
@@ -78,6 +86,19 @@ public class CommonFileController extends ABaseController {
         }
 
         readFile(response, filePath);
+    }
+
+    protected ResponseVO getFolderInfo(String path, String userId){
+        String[] pathArray = path.split("/");
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(userId);
+        fileInfoQuery.setFolderType(FileFolderTypeEnum.FOLDER.getType());
+        fileInfoQuery.setFileIdArray(pathArray);
+        String orderBy = "field(file_id,\""+ StringUtils.join(pathArray, "\",\"") +"\")";
+        fileInfoQuery.setOrderBy(orderBy);
+        List<FileInfo> fileInfoList = fileInfoService.findListByParam(fileInfoQuery);
+
+        return getSuccessResponseVO(CopyTools.copyList(fileInfoList, FileInfoVO.class));
     }
 
 }
