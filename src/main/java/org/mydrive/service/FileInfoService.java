@@ -122,4 +122,14 @@ public interface FileInfoService {
      */
     void removeFile2RecyleBatch(String userId, String fileIds);
 
+    /**
+     * 批量从回收站中恢复文件
+     */
+    void recoveryFileBatch(String userId, String fileIds);
+
+    /**
+     * 从回收站彻底删除
+     */
+    void delFileBatch(String userId, String fileIds, Boolean adminOp);
+
 }
