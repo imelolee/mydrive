@@ -9,9 +9,12 @@ public class Constants {
 
     public static final Integer LENGTH_10 = 10;
 
+    public static final Integer LENGTH_50 = 50;
+
+
     public static final Integer LENGTH_150 = 150;
 
-    public static final Long MB = 1024*1024L;
+    public static final Long MB = 1024 * 1024L;
 
     public static final String FILE_FOLDER_FILE = "/file/";
 
@@ -34,7 +37,13 @@ public class Constants {
 
     public static final String REDIS_KEY_USER_FILE_TEMP_SIZE = "mydrive:user:file:temp:";
 
+    public static final String REDIS_KEY_DOWNLOAD = "mydrive:download:";
+
+
     public static final Integer REDIS_KEY_EX_ONE_MIN = 60;
+
+    public static final Integer REDIS_KEY_EX_FIVE_MIN = REDIS_KEY_EX_ONE_MIN * 5;
+
 
     public static final Integer REDIS_KEY_EX_ONE_HOUR = REDIS_KEY_EX_ONE_MIN * 60;
 
