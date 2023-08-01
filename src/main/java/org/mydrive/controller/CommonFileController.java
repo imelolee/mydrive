@@ -2,26 +2,35 @@ package org.mydrive.controller;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.mydrive.component.RedisComponent;
 import org.mydrive.entity.config.AppConfig;
 import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.DownloadFileDto;
 import org.mydrive.entity.enums.FileCategoryEnum;
 import org.mydrive.entity.enums.FileFolderTypeEnum;
+import org.mydrive.entity.enums.ResponseCodeEnum;
 import org.mydrive.entity.po.FileInfo;
 import org.mydrive.entity.query.FileInfoQuery;
 import org.mydrive.entity.vo.FileInfoVO;
 import org.mydrive.entity.vo.ResponseVO;
+import org.mydrive.exception.BusinessException;
 import org.mydrive.service.FileInfoService;
 import org.mydrive.utils.CopyTools;
 import org.mydrive.utils.StringTools;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.List;
 
 public class CommonFileController extends ABaseController {
     @Resource
     private AppConfig appConfig;
+
+    @Resource
+    private RedisComponent redisComponent;
 
     @Resource
     private FileInfoService fileInfoService;
@@ -88,17 +97,59 @@ public class CommonFileController extends ABaseController {
         readFile(response, filePath);
     }
 
-    protected ResponseVO getFolderInfo(String path, String userId){
+    protected ResponseVO getFolderInfo(String path, String userId) {
         String[] pathArray = path.split("/");
         FileInfoQuery fileInfoQuery = new FileInfoQuery();
         fileInfoQuery.setUserId(userId);
         fileInfoQuery.setFolderType(FileFolderTypeEnum.FOLDER.getType());
         fileInfoQuery.setFileIdArray(pathArray);
-        String orderBy = "field(file_id,\""+ StringUtils.join(pathArray, "\",\"") +"\")";
+        String orderBy = "field(file_id,\"" + StringUtils.join(pathArray, "\",\"") + "\")";
         fileInfoQuery.setOrderBy(orderBy);
         List<FileInfo> fileInfoList = fileInfoService.findListByParam(fileInfoQuery);
 
         return getSuccessResponseVO(CopyTools.copyList(fileInfoList, FileInfoVO.class));
     }
 
+    /**
+     * 创建下载链接
+     *
+     * @param fileId
+     * @param userId
+     * @return
+     */
+    protected ResponseVO createDownloadUrl(String fileId, String userId) {
+        FileInfo fileInfo = fileInfoService.getFileInfoByFileIdAndUserId(fileId, userId);
+        if (fileInfo == null) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (FileFolderTypeEnum.FOLDER.getType().equals(fileInfo.getFolderType())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        String code = StringTools.getRandomString(Constants.LENGTH_50);
+
+        DownloadFileDto fileDto = new DownloadFileDto();
+        fileDto.setDownloadCode(code);
+        fileDto.setFilePath(fileInfo.getFilePath());
+        fileDto.setFileName(fileInfo.getFileName());
+        redisComponent.saveDownloadCode(code, fileDto);
+
+        return getSuccessResponseVO(code);
+    }
+
+    protected void download(HttpServletRequest request, HttpServletResponse response, String code) throws Exception {
+        DownloadFileDto downloadFileDto = redisComponent.getDownloadCode(code);
+        if (null == downloadFileDto) {
+            return;
+        }
+        String filePath = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + downloadFileDto.getFilePath();
+        String fileName = downloadFileDto.getFileName();
+        response.setContentType("application/x-msdownload; charset=UTF-8");
+        if (request.getHeader("User-Agent").toLowerCase().indexOf("msie") > 0) { // IE浏览器
+            fileName = URLEncoder.encode(fileName, "UTF-8");
+        } else {
+            fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
+        }
+        response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
+        readFile(response, filePath);
+    }
 }

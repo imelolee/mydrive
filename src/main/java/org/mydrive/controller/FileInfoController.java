@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -153,6 +154,30 @@ public class FileInfoController extends CommonFileController {
                                        @VerifyParam(required = true) String filePid) {
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         fileInfoService.changeFileFolder(fileIds, filePid, webUserDto.getUserId());
+        return getSuccessResponseVO(null);
+    }
+
+    @RequestMapping("/createDownloadUrl/{fileId}")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO createDownloadUrl(HttpSession session,
+                                        @VerifyParam(required = true) @PathVariable("fileId") String fileId) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+
+        return super.createDownloadUrl(fileId, webUserDto.getUserId());
+    }
+
+    @RequestMapping("/download/{code}")
+    @GlobalInterceptor(checkParams = true, checkLogin = false)
+    public void download(HttpServletRequest request, HttpServletResponse response,
+                         @VerifyParam(required = true) @PathVariable("code") String code) throws Exception {
+        super.download(request, response, code);
+    }
+
+    @RequestMapping("/delFile")
+    @GlobalInterceptor(checkParams = true)
+    public ResponseVO delFile(HttpSession session, @VerifyParam(required = true) String fileIds) {
+        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
+        fileInfoService.removeFile2RecyleBatch(webUserDto.getUserId(), fileIds);
         return getSuccessResponseVO(null);
     }
 }

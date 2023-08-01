@@ -1,6 +1,7 @@
 package org.mydrive.component;
 
 import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.DownloadFileDto;
 import org.mydrive.entity.dto.SysSettingsDto;
 import org.mydrive.entity.dto.UserSpaceDto;
 import org.mydrive.entity.po.FileInfo;
@@ -50,9 +51,6 @@ public class RedisComponent{
 
     }
 
-    /**
-     * 获取临时文件大小
-     */
     public Long getFileTempSize(String userId, String fileId){
         Long currentSize = getFileSizeFromRedis(Constants.REDIS_KEY_USER_FILE_TEMP_SIZE + userId + fileId);
         return currentSize;
@@ -70,6 +68,14 @@ public class RedisComponent{
             return (Long) sizeObj;
         }
         return 0L;
+    }
+
+    public void saveDownloadCode(String code, DownloadFileDto downloadFileDto){
+        redisUtils.setex(Constants.REDIS_KEY_DOWNLOAD + code, downloadFileDto, Constants.REDIS_KEY_EX_FIVE_MIN);
+    }
+
+    public DownloadFileDto getDownloadCode(String code){
+        return (DownloadFileDto) redisUtils.get(Constants.REDIS_KEY_DOWNLOAD + code);
     }
 
 }
