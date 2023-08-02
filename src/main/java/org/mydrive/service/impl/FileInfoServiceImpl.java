@@ -271,10 +271,11 @@ public class FileInfoServiceImpl implements FileInfoService {
 
             File newFile = new File(tempFileFolder.getPath() + "/" + chunkIndex);
             file.transferTo(newFile);
+            // 保存临时大小
+            redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
             if (chunkIndex < chunks - 1) {
                 resultDto.setStatus(UploadStatusEnum.UPLOADING.getCode());
-                // 保存临时大小
-                redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
+
                 return resultDto;
             }
             redisComponent.saveFileTempSize(webUserDto.getUserId(), fileId, file.getSize());
