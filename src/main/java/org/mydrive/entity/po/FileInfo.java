@@ -31,7 +31,7 @@ public class FileInfo implements Serializable {
 	private Integer fileCategory;
 
 	/**
-	 * 
+	 * 文件类型
 	 */
 	private Integer fileType;
 
