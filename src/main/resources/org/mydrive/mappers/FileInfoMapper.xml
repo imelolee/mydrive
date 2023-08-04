@@ -155,6 +155,9 @@
             <if test="query.excludeFileIdArray!=null and query.excludeFileIdArray.length>0">
                 and file_id not in (<foreach collection="query.excludeFileIdArray" item="item" separator=",">#{item}</foreach>)
             </if>
+            <if test="query.queryExpire!=null and query.queryExpire">
+                <![CDATA[ and recovery_time < date_sub(now(), interval 10 day) ]]>
+            </if>
         </where>
     </sql>
 

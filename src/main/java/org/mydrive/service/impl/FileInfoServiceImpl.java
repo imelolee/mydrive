@@ -756,4 +756,83 @@ public class FileInfoServiceImpl implements FileInfoService {
         userSpaceDto.setUseSpace(useSpace);
         redisComponent.saveUserSpaceUse(userId, userSpaceDto);
     }
+
+    /**
+     * 仅获取已分享的文件
+     */
+    @Override
+    public void checkRootFilePid(String rootFilePid, String userId, String fileId) {
+        if (StringTools.isEmpty(fileId)) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (rootFilePid.equals(fileId)) {
+            return;
+        }
+        checkFilePid(rootFilePid, fileId, userId);
+    }
+
+    private void checkFilePid(String rootFilePid, String fileId, String userId) {
+        FileInfo fileInfo = this.fileInfoMapper.selectByFileIdAndUserId(fileId, userId);
+        if (null == fileInfo) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (Constants.ZERO_STRING.equals(fileInfo.getFilePid())) {
+            throw new BusinessException(ResponseCodeEnum.CODE_600);
+        }
+        if (fileInfo.getFilePid().equals(rootFilePid)) {
+            return;
+        }
+        checkFilePid(rootFilePid, fileInfo.getFilePid(), userId);
+    }
+
+    /**
+     * 保存分享的文件
+     */
+    @Override
+    public void saveShare(String shareRootFilePid, String shareFileIds, String myFolderId, String shareUserId, String currentUserId) {
+        String[] shareFileIdArray = shareFileIds.split(",");
+        // 目标文件列表
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(currentUserId);
+        fileInfoQuery.setFilePid(myFolderId);
+        List<FileInfo> currentFileList = this.fileInfoMapper.selectList(fileInfoQuery);
+        Map<String, FileInfo> currentFileMap = currentFileList.stream().collect(Collectors.toMap(FileInfo::getFileName, Function.identity(), (data1, data2) -> data2));
+        // 选择的文件
+        fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(shareUserId);
+        fileInfoQuery.setFileIdArray(shareFileIdArray);
+        List<FileInfo> shareFileList = this.fileInfoMapper.selectList(fileInfoQuery);
+        // 重命名选择的文件
+        List<FileInfo> copyFileList = new ArrayList<>();
+        Date currentDate = new Date();
+        for (FileInfo item : shareFileList) {
+            FileInfo haveFile = currentFileMap.get(item.getFileName());
+            if (haveFile != null) {
+                item.setFileName(StringTools.rename(item.getFileName()));
+            }
+            findAllSubFile(copyFileList, item, shareUserId, currentUserId, currentDate, myFolderId);
+        }
+        this.fileInfoMapper.insertBatch(copyFileList);
+    }
+
+    private void findAllSubFile(List<FileInfo> copyFileList, FileInfo fileInfo, String sourceUserId,
+                                String currentUserId, Date currentDate, String newFilePid) {
+        String sourceFileId = fileInfo.getFileId();
+        fileInfo.setCreateTime(currentDate);
+        fileInfo.setLastUpdateTime(currentDate);
+        fileInfo.setFilePid(newFilePid);
+        fileInfo.setUserId(currentUserId);
+        String newFileId = StringTools.getRandomString(Constants.LENGTH_10);
+        fileInfo.setFileId(newFileId);
+        copyFileList.add(fileInfo);
+        if (FileFolderTypeEnum.FOLDER.getType().equals(fileInfo.getFolderType())) {
+            FileInfoQuery fileInfoQuery = new FileInfoQuery();
+            fileInfoQuery.setFilePid(sourceFileId);
+            fileInfoQuery.setUserId(sourceUserId);
+            List<FileInfo> sourceFileList = this.fileInfoMapper.selectList(fileInfoQuery);
+            for (FileInfo item : sourceFileList) {
+                findAllSubFile(copyFileList, item, sourceUserId, currentUserId, currentDate, newFileId);
+            }
+        }
+    }
 }

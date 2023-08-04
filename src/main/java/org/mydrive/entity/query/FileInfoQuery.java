@@ -119,6 +119,16 @@ public class FileInfoQuery extends BaseParam {
 
     private String[] excludeFileIdArray;
 
+    private Boolean queryExpire;
+
+    public Boolean getQueryExpire() {
+        return queryExpire;
+    }
+
+    public void setQueryExpire(Boolean queryExpire) {
+        this.queryExpire = queryExpire;
+    }
+
     public String[] getExcludeFileIdArray() {
         return excludeFileIdArray;
     }

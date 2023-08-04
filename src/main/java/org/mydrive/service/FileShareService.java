@@ -2,6 +2,7 @@ package org.mydrive.service;
 
 import java.util.List;
 
+import org.mydrive.entity.dto.SessionShareDto;
 import org.mydrive.entity.query.FileShareQuery;
 import org.mydrive.entity.po.FileShare;
 import org.mydrive.entity.vo.PaginationResultVO;
@@ -78,4 +79,9 @@ public interface FileShareService {
 	 * 批量删除分享链接
 	 */
 	void deleteFileShareBatch(String[] shareIdArray, String userId);
+
+	/**
+	 * 检查分享提取码
+	 */
+	SessionShareDto checkShareCode(String shareId, String code);
 }

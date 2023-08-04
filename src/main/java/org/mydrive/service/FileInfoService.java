@@ -132,4 +132,14 @@ public interface FileInfoService {
      */
     void delFileBatch(String userId, String fileIds, Boolean adminOp);
 
+    /**
+     * 仅获取已分享的文件
+     */
+    void checkRootFilePid(String rootFilePid, String userId, String fileId);
+
+    /**
+     * 保存分享的文件
+     */
+    void saveShare(String shareRootFilePid, String shareFileIds, String myFolderId, String shareUserId, String currentUserId);
+
 }

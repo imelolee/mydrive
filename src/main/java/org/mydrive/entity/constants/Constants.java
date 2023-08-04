@@ -54,6 +54,7 @@ public class Constants {
 
     public static final String SESSION_KEY = "session_key";
 
+    public static final String SESSION_SHARE_KEY = "session_share_key";
 
     public static final String TS_NAME = "index.ts";
     public static final String M3U8_NAME = "index.m3u8";

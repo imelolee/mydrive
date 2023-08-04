@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.SessionShareDto;
 import org.mydrive.entity.enums.ResponseCodeEnum;
 import org.mydrive.entity.enums.ShareValidTypeEnum;
 import org.mydrive.exception.BusinessException;
@@ -164,8 +165,30 @@ public class FileShareServiceImpl implements FileShareService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteFileShareBatch(String[] shareIdArray, String userId) {
         Integer count = this.fileShareMapper.deleteFileShareBatch(shareIdArray, userId);
-        if (count != shareIdArray.length){
+        if (count != shareIdArray.length) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
+    }
+
+    /**
+     * 检查分享提取码
+     */
+    @Override
+    public SessionShareDto checkShareCode(String shareId, String code) {
+        FileShare fileShare = this.fileShareMapper.selectByShareId(shareId);
+        if (null == fileShare || (fileShare.getExpireTime() != null && new Date().after(fileShare.getExpireTime()))) {
+            throw new BusinessException(ResponseCodeEnum.CODE_902.getMsg());
+        }
+        if (!fileShare.getCode().equals(code)) {
+            throw new BusinessException("提取码错误");
+        }
+        // 更新浏览次数
+        this.fileShareMapper.updateShareShowCount(shareId);
+        SessionShareDto shareDto = new SessionShareDto();
+        shareDto.setShareId(shareId);
+        shareDto.setShareUserId(fileShare.getUserId());
+        shareDto.setFileId(fileShare.getFileId());
+        shareDto.setExpireTime(fileShare.getExpireTime());
+        return shareDto;
     }
 }
