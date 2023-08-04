@@ -2,6 +2,7 @@ package org.mydrive.controller;
 
 import org.mydrive.aspect.GlobalOperatcionAspect;
 import org.mydrive.entity.constants.Constants;
+import org.mydrive.entity.dto.SessionShareDto;
 import org.mydrive.entity.dto.SessionWebUserDto;
 import org.mydrive.entity.enums.ResponseCodeEnum;
 import org.mydrive.entity.vo.PaginationResultVO;
@@ -109,5 +110,10 @@ public class ABaseController {
     protected SessionWebUserDto getUserInfoFromSession(HttpSession session) {
         SessionWebUserDto sessionWebUserDto = (SessionWebUserDto) session.getAttribute(Constants.SESSION_KEY);
         return sessionWebUserDto;
+    }
+
+    protected SessionShareDto getShareFromSession(HttpSession session, String shareId) {
+        SessionShareDto sessionShareDto = (SessionShareDto) session.getAttribute(Constants.SESSION_SHARE_KEY + shareId);
+        return sessionShareDto;
     }
 }
