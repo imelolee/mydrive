@@ -36,7 +36,7 @@ public class CommonFileController extends ABaseController {
     private FileInfoService fileInfoService;
 
     /**
-     * 获取图片预览
+     * Get image preview
      *
      * @param response
      * @param imageFolder
@@ -57,7 +57,7 @@ public class CommonFileController extends ABaseController {
     }
 
     /**
-     * 获取视频/文档预览
+     * Get video & doc preview
      *
      * @param response
      * @param fileId
@@ -111,7 +111,7 @@ public class CommonFileController extends ABaseController {
     }
 
     /**
-     * 创建下载链接
+     * create download url
      *
      * @param fileId
      * @param userId

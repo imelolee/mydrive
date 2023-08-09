@@ -10,19 +10,19 @@ import java.lang.annotation.*;
 @Mapping
 public @interface GlobalInterceptor {
     /**
-     * 校验参数
+     * checkParams
      * @return
      */
     boolean checkParams() default false;
 
     /**
-     * 校验登录
+     * checkLogin
      * @return
      */
     boolean checkLogin() default true;
 
     /**
-     * 校验是否是超级管理员
+     * checkAdmin
      * @return
      */
     boolean checkAdmin() default false;

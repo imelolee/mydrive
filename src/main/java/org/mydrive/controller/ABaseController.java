@@ -88,20 +88,20 @@ public class ABaseController {
             }
             out.flush();
         } catch (Exception e) {
-            logger.error("读取文件异常", e);
+            logger.error("file read error", e);
         } finally {
             if (out != null) {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    logger.error("IO异常", e);
+                    logger.error("IO error", e);
                 }
             }
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    logger.error("IO异常", e);
+                    logger.error("IO error", e);
                 }
             }
         }

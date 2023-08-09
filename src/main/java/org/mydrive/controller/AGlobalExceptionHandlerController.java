@@ -22,7 +22,7 @@ public class AGlobalExceptionHandlerController extends ABaseController {
 
     @ExceptionHandler(value = Exception.class)
     Object handleException(Exception e, HttpServletRequest request) {
-        logger.error("请求错误，请求地址{},错误信息:", request.getRequestURL(), e);
+        logger.error("Request error, request address: {}, error message:", request.getRequestURL(), e);
         ResponseVO ajaxResponse = new ResponseVO();
         //404
         if (e instanceof NoHandlerFoundException) {

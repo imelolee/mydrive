@@ -54,28 +54,24 @@ public class GlobalOperatcionAspect {
             if (null == interceptor) {
                 return;
             }
-            /**
-             * 校验登录
-             */
+            // check login
             if (interceptor.checkLogin() || interceptor.checkAdmin()) {
                 checkLogin(interceptor.checkAdmin());
             }
-            /**
-             * 校验参数
-             */
+            // check params
             if (interceptor.checkParams()) {
                 validateParams(method, args);
             }
 
 
         } catch (BusinessException e) {
-            logger.error("全局拦截器异常", e);
+            logger.error("global interceptor exception", e);
             throw e;
         } catch (Exception e) {
-            logger.error("全局拦截器异常", e);
+            logger.error("global interceptor exception", e);
             throw new BusinessException(ResponseCodeEnum.CODE_500);
         } catch (Throwable e) {
-            logger.error("全局拦截器异常", e);
+            logger.error("global interceptor exception", e);
             throw new BusinessException(ResponseCodeEnum.CODE_500);
         }
 
@@ -103,7 +99,7 @@ public class GlobalOperatcionAspect {
             if (verifyParam == null) {
                 continue;
             }
-            // 基本数据类型
+            // basic data type
             if (TYPE_STRING.equals(parameter.getParameterizedType().getTypeName()) || TYPE_LONG.equals(parameter.getParameterizedType().getTypeName())) {
                 checkValue(value, verifyParam);
             } else {
@@ -127,10 +123,10 @@ public class GlobalOperatcionAspect {
                 checkValue(resultValue, fieldVerifyParam);
             }
         } catch (BusinessException e) {
-            logger.error("参数校验失败", e);
+            logger.error("Parameters validation failed", e);
             throw e;
         } catch (Exception e) {
-            logger.error("参数校验失败", e);
+            logger.error("Parameters validation failed", e);
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
     }
@@ -138,21 +134,15 @@ public class GlobalOperatcionAspect {
     private void checkValue(Object value, VerifyParam verifyParam) throws BusinessException {
         Boolean isEmpty = value == null || StringTools.isEmpty(value.toString());
         Integer length = value == null ? 0 : value.toString().length();
-        /**
-         * 校验空
-         */
+        // check null
         if (isEmpty && verifyParam.required()) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
-        /**
-         * 校验长度
-         */
+        // check length
         if (!isEmpty && (verifyParam.max() != -1 && verifyParam.max() < length || verifyParam.min() != -1 && verifyParam.min() > length)) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }
-        /**
-         * 校验正则
-         */
+        // check regex
         if (!isEmpty && !StringTools.isEmpty(verifyParam.regex().getRegex()) && !VerifyUtils.verify(verifyParam.regex(), String.valueOf(value))) {
             throw new BusinessException(ResponseCodeEnum.CODE_600);
         }

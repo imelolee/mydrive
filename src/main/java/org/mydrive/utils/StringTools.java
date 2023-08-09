@@ -28,13 +28,13 @@ public class StringTools {
                 }
             }
             if (!notEmpty) {
-                throw new BusinessException("多参数更新，删除，必须有非空条件");
+                throw new BusinessException("パラメータの検証に失敗しました");
             }
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("校验参数是否为空失败");
+            throw new BusinessException("パラメータの検証に失敗しました");
         }
     }
 

@@ -15,7 +15,7 @@ public class ProcessUtils {
 
     public static String executeCommand(String cmd, Boolean outprintLog) throws BusinessException {
         if (StringTools.isEmpty(cmd)) {
-            logger.error("--- 执行指令失败，Ffmpeg指令为空 ---");
+            logger.error("--- Failed to execute command, Ffmpeg command is empty ---");
             return null;
         }
 
@@ -35,15 +35,15 @@ public class ProcessUtils {
             String result = errorStream.stringBuffer.append(inputStream.stringBuffer + "\n").toString();
             // 输出执行命令信息
             if (outprintLog) {
-                logger.info("执行命令{},已执行完毕,执行结果{}", cmd, result);
+                logger.info("Exce {}, result{}", cmd, result);
             } else {
-                logger.info("执行命令{},已执行完毕", cmd);
+                logger.info("Exce {} finished", cmd);
             }
             return result;
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessException("视频转换失败");
+            throw new BusinessException("ビデオ変換に失敗しました");
         } finally {
             if (null != process) {
                 ProcessKiller ffmpegKiller = new ProcessKiller(process);
@@ -54,7 +54,7 @@ public class ProcessUtils {
     }
 
     /**
-     * 在程序退出前结束ffmpeg进程
+     * kill ffmpeg process before quit
      */
     private static class ProcessKiller extends Thread {
         private Process process;
@@ -70,7 +70,7 @@ public class ProcessUtils {
     }
 
     /**
-     * 用于取出ffmpeg线程执行过程中的输入输出流信息
+     * Retrieve stream information during ffmpeg thread
      */
     static class PrintStream extends Thread {
         InputStream inputStream = null;
@@ -93,7 +93,7 @@ public class ProcessUtils {
                     stringBuffer.append(line);
                 }
             } catch (Exception e) {
-                logger.error("读取输入流出错" + e.getMessage());
+                logger.error("Input stream error" + e.getMessage());
             } finally {
                 try {
                     if (null != bufferedReader) {
@@ -103,7 +103,7 @@ public class ProcessUtils {
                         inputStream.close();
                     }
                 } catch (IOException e) {
-                    logger.error("关闭流出错");
+                    logger.error("Stop stream error");
                 }
             }
         }

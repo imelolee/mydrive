@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * 用户信息表 Controller
+ * UserInfo Controller
  */
 @RestController("userInfoController")
 
@@ -48,7 +48,7 @@ public class AccountController extends ABaseController {
 
 
     /**
-     * 获取验证码
+     * Get validation code
      * @param response
      * @param session
      * @param type
@@ -56,9 +56,9 @@ public class AccountController extends ABaseController {
      */
     @RequestMapping("/checkCode")
     public void checkCode(HttpServletResponse response, HttpSession session, Integer type) throws IOException {
-        // 设置响应的类型格式为图片格式
+        // set content type as image
         response.setContentType("image/jpeg");
-        //禁止图像缓存。
+        // no image cache
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
@@ -77,7 +77,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 用户注册
+     * User register
      *
      * @param session
      * @param email
@@ -95,7 +95,7 @@ public class AccountController extends ABaseController {
                                @VerifyParam(required = true) String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) session.getAttribute(Constants.CHECK_CODE_KEY))) {
-                throw new BusinessException("图片验证码不正确");
+                throw new BusinessException("画像認証コードが間違っています");
             }
             userInfoService.register(email, nickName, password);
             return getSuccessResponseVO(null);
@@ -105,7 +105,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 登录
+     * User login
      *
      * @param session
      * @param email
@@ -121,7 +121,7 @@ public class AccountController extends ABaseController {
                             @VerifyParam(required = true) String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) session.getAttribute(Constants.CHECK_CODE_KEY))) {
-                throw new BusinessException("图片验证码不正确");
+                throw new BusinessException("画像認証コードが間違っています");
             }
             SessionWebUserDto loginDto = userInfoService.login(email, password);
             session.setAttribute(Constants.SESSION_KEY, loginDto);
@@ -132,7 +132,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 重置密码
+     * Reset password
      *
      * @param session
      * @param email
@@ -148,7 +148,7 @@ public class AccountController extends ABaseController {
                                @VerifyParam(required = true) String checkCode) {
         try {
             if (!checkCode.equalsIgnoreCase((String) session.getAttribute(Constants.CHECK_CODE_KEY))) {
-                throw new BusinessException("图片验证码不正确");
+                throw new BusinessException("画像認証コードが間違っています");
             }
             userInfoService.resetPwd(email, password);
             return getSuccessResponseVO(null);
@@ -158,7 +158,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 获取用户头像
+     * Get user avatar
      *
      * @param response
      * @param session
@@ -191,9 +191,9 @@ public class AccountController extends ABaseController {
         PrintWriter writer = null;
         try {
             writer = response.getWriter();
-            writer.print("请在头像目录下放置默认头像");
+            writer.print("Please put default avatar at avatar folder.");
         } catch (Exception e) {
-            logger.error("无默认头像", e);
+            logger.error("No default avatar", e);
         } finally {
             writer.close();
         }
@@ -201,7 +201,7 @@ public class AccountController extends ABaseController {
 
 
     /**
-     * 获取登录用户信息
+     * Get login user info
      *
      * @param session
      * @return
@@ -215,7 +215,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 获取用户空间
+     * Get user space
      *
      * @param session
      * @return
@@ -229,7 +229,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 退出登录
+     * Log out
      *
      * @param session
      * @return
@@ -242,7 +242,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 更新用户头像
+     * Update user avatar
      *
      * @param session
      * @param avatar
@@ -261,7 +261,7 @@ public class AccountController extends ABaseController {
         try {
             avatar.transferTo(targetFile);
         } catch (Exception e) {
-            logger.error("上传头像失败", e);
+            logger.error("Upload avatar failed.", e);
         }
 
         UserInfo userInfo = new UserInfo();
@@ -274,7 +274,7 @@ public class AccountController extends ABaseController {
     }
 
     /**
-     * 更新密码
+     * Update password
      *
      * @param session
      * @param password
