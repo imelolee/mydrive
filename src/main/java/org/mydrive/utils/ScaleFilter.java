@@ -18,7 +18,7 @@ public class ScaleFilter {
             String cmd = "ffmpeg -i %s -y -vframes 1 -vf scale=%d:%d/a %s";
             ProcessUtils.executeCommand(String.format(cmd, sourceFile.getAbsoluteFile(), width, width, targetFile.getAbsoluteFile()), false);
         } catch (Exception e) {
-            logger.error("生成视频封面失败", e);
+            logger.error("Failed to generate video cover", e);
         }
     }
 
@@ -27,7 +27,7 @@ public class ScaleFilter {
             BufferedImage src = ImageIO.read(file);
             int sorceH = src.getHeight();
             int sorceW = src.getWidth();
-            // 小于指定大小不压缩
+            // Smaller than the specified size is not compressed
             if (sorceW <= thumbnailWidth) {
                 return false;
             }
@@ -48,7 +48,7 @@ public class ScaleFilter {
                 FileUtils.forceDelete(sourceFile);
             }
         } catch (Exception e){
-            logger.error("压缩图片失败", e);
+            logger.error("Failed to compress image", e);
         }
     }
 }

@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * 文件信息表 Controller
+ * FileInfo Controller
  */
 @RestController("fileInfoController")
 @RequestMapping("/file")
@@ -39,7 +39,7 @@ public class FileInfoController extends CommonFileController {
     private FileInfoService fileInfoService;
 
     /**
-     * 根据条件分页查询
+     * Pagination query based on conditions
      *
      * @param session
      * @param query
@@ -60,6 +60,19 @@ public class FileInfoController extends CommonFileController {
         return getSuccessResponseVO(convert2PaginationVO(result, FileInfoVO.class));
     }
 
+    /**
+     * File upload
+     *
+     * @param session
+     * @param fileId
+     * @param file
+     * @param fileName
+     * @param filePid
+     * @param fileMd5
+     * @param chunkIndex
+     * @param chunks
+     * @return
+     */
     @RequestMapping("/uploadFile")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO uploadFile(HttpSession session,
@@ -97,6 +110,14 @@ public class FileInfoController extends CommonFileController {
         super.getFile(response, fileId, webUserDto.getUserId());
     }
 
+    /**
+     * Create new folder
+     *
+     * @param session
+     * @param filePid
+     * @param fileName
+     * @return
+     */
     @RequestMapping("/newFolder")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO newFolder(HttpSession session,
@@ -108,6 +129,13 @@ public class FileInfoController extends CommonFileController {
         return getSuccessResponseVO(CopyTools.copy(fileInfo, FileInfoVO.class));
     }
 
+    /**
+     * Get folder info by path
+     *
+     * @param session
+     * @param path
+     * @return
+     */
     @RequestMapping("/getFolderInfo")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO getFolderInfo(HttpSession session,
@@ -117,6 +145,14 @@ public class FileInfoController extends CommonFileController {
         return super.getFolderInfo(path, webUserDto.getUserId());
     }
 
+    /**
+     * Rename file name
+     *
+     * @param session
+     * @param fileId
+     * @param fileName
+     * @return
+     */
     @RequestMapping("/rename")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO rename(HttpSession session,
@@ -127,6 +163,14 @@ public class FileInfoController extends CommonFileController {
         return getSuccessResponseVO(CopyTools.copy(fileInfo, FileInfoVO.class));
     }
 
+    /**
+     * Load all folder at one pid
+     *
+     * @param session
+     * @param filePid
+     * @param currentFileIds
+     * @return
+     */
     @RequestMapping("/loadAllFolder")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO loadAllFolder(HttpSession session,
@@ -147,6 +191,13 @@ public class FileInfoController extends CommonFileController {
         return getSuccessResponseVO(CopyTools.copyList(fileInfoList, FileInfoVO.class));
     }
 
+    /**
+     * Move file
+     * @param session
+     * @param fileIds
+     * @param filePid
+     * @return
+     */
     @RequestMapping("/changeFileFolder")
     @GlobalInterceptor(checkParams = true)
     public ResponseVO changeFileFolder(HttpSession session,
@@ -156,6 +207,7 @@ public class FileInfoController extends CommonFileController {
         fileInfoService.changeFileFolder(fileIds, filePid, webUserDto.getUserId());
         return getSuccessResponseVO(null);
     }
+
 
     @RequestMapping("/createDownloadUrl/{fileId}")
     @GlobalInterceptor(checkParams = true)

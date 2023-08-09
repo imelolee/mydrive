@@ -56,7 +56,7 @@ public class WebShareController extends CommonFileController {
             return getSuccessResponseVO(null);
         }
         ShareInfoVO shareInfoVO = getShareInfoCommon(shareId);
-        // 判断是否是当前用户分享的文件
+        // if current user shared file
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         if (webUserDto != null && webUserDto.getUserId().equals(sessionShareDto.getShareUserId())) {
             shareInfoVO.setCurrentUser(true);
@@ -187,7 +187,7 @@ public class WebShareController extends CommonFileController {
         SessionShareDto sessionShareDto = checkShare(session, shareId);
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         if (sessionShareDto.getShareUserId().equals(webUserDto.getUserId())){
-            throw new BusinessException("此文件已存在，无法保存");
+            throw new BusinessException("このファイルはすでに存在するため保存できません");
         }
         fileInfoService.saveShare(sessionShareDto.getFileId(), shareFileIds, myFolderId, sessionShareDto.getShareUserId(), webUserDto.getUserId());
         return getSuccessResponseVO(null);
