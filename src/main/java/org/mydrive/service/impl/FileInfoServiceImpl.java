@@ -321,18 +321,18 @@ public class FileInfoServiceImpl implements FileInfoService {
             return resultDto;
 
         } catch (BusinessException e) {
-            logger.error("文件上传失败", e);
+            logger.error("File upload failed", e);
             uploadSuccess = false;
             throw e;
         } catch (Exception e) {
-            logger.error("文件上传失败", e);
+            logger.error("File upload failed", e);
             uploadSuccess = false;
         } finally {
             if (!uploadSuccess && tempFileFolder != null) {
                 try {
                     FileUtils.deleteDirectory(tempFileFolder);
                 } catch (IOException e) {
-                    logger.error("删除临时目录失败", e);
+                    logger.error("Delete temp folder failed", e);
                 }
             }
         }
@@ -420,7 +420,7 @@ public class FileInfoServiceImpl implements FileInfoService {
                 }
             }
         } catch (Exception e) {
-            logger.error("文件转码失败,文件id {}, userId {}", fileId, webUserDto.getUserId(), e);
+            logger.error("File transfer failed, fileId {}, userId {}", fileId, webUserDto.getUserId(), e);
             transferSuccess = false;
         } finally {
             FileInfo updateInfo = new FileInfo();
@@ -437,10 +437,18 @@ public class FileInfoServiceImpl implements FileInfoService {
     private void union(String dirPath, String toFilePath, String fileName, Boolean delSource) {
         File dir = new File(dirPath);
         if (!dir.exists()) {
-            throw new BusinessException("目录不存在");
+            throw new BusinessException("フォルダが存在しません");
         }
         File[] fileList = dir.listFiles();
         File targetFile = new File(toFilePath);
+        if (!targetFile.exists()) {
+            targetFile.getParentFile().mkdir();
+            try {
+                targetFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         RandomAccessFile writeFile = null;
         try {
             writeFile = new RandomAccessFile(targetFile, "rw");
@@ -455,15 +463,15 @@ public class FileInfoServiceImpl implements FileInfoService {
                         writeFile.write(b, 0, len);
                     }
                 } catch (Exception e) {
-                    logger.error("合并分片失败", e);
-                    throw new BusinessException("合并分片失败");
+                    logger.error("File merge failed", e);
+                    throw new BusinessException("ファイルのマージに失敗しました");
                 } finally {
                     readFile.close();
                 }
             }
         } catch (Exception e) {
-            logger.error("合并文件{}失败", fileName, e);
-            throw new BusinessException("合并文件" + fileName + "失败");
+            logger.error("File {} merge failed", fileName, e);
+            throw new BusinessException("ファイル" + fileName + "のマージに失敗しました");
         } finally {
             if (null != writeFile) {
                 try {
@@ -534,7 +542,7 @@ public class FileInfoServiceImpl implements FileInfoService {
 
         Integer count = this.fileInfoMapper.selectCount(fileInfoQuery);
         if (count > 0) {
-            throw new BusinessException("此目录下存在同名文件，请修改名称");
+            throw new BusinessException("このディレクトリに同じ名前のファイルが存在します，名前を変更してください");
         }
     }
 
@@ -546,7 +554,7 @@ public class FileInfoServiceImpl implements FileInfoService {
     public FileInfo rename(String fileId, String userId, String fileName) {
         FileInfo fileInfo = this.fileInfoMapper.selectByFileIdAndUserId(fileId, userId);
         if (null == fileInfo) {
-            throw new BusinessException("文件不存在");
+            throw new BusinessException("ファイルが存在しません");
         }
 
         String filePid = fileInfo.getFilePid();
@@ -567,7 +575,7 @@ public class FileInfoServiceImpl implements FileInfoService {
         fileInfoQuery.setDelFlag(FileDelFlagEnum.USING.getFlag());
         Integer count = this.fileInfoMapper.selectCount(fileInfoQuery);
         if (count > 1) {
-            throw new BusinessException("文件名" + fileName + "已存在");
+            throw new BusinessException("ファイル" + fileName + "が存在します");
         }
         fileInfo.setFileName(fileName);
         fileInfo.setLastUpdateTime(currentDate);
