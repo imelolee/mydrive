@@ -231,11 +231,11 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public void register(String email, String nickName, String password) {
 		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
 		if (null != userInfo){
-			throw new BusinessException("邮箱账号已存在");
+			throw new BusinessException("メールは既に存在します");
 		}
 		UserInfo nickNameUser = this.userInfoMapper.selectByNickName(nickName);
 		if (null != nickNameUser){
-			throw new BusinessException("昵称已存在");
+			throw new BusinessException("ユーザー名は既に存在します");
 		}
 		String userId = StringTools.getRandomNumber(Constants.LENGTH_10);
 		UserInfo newUserInfo = new UserInfo();
@@ -257,10 +257,10 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public SessionWebUserDto login(String email, String password) {
 		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
 		if (null == userInfo || !userInfo.getPassword().equals(password)){
-			throw new BusinessException("邮箱或密码错误");
+			throw new BusinessException("メールアドレスまたはパスワードが間違っています");
 		}
 		if (UserStatusEnum.DISABLE.getStatus().equals(userInfo.getStatus())){
-			throw new BusinessException("账号被禁用");
+			throw new BusinessException("アカウントが無効になっています");
 		}
 		// 更新最后登录时间
 		UserInfo updateInfo = new UserInfo();
@@ -293,7 +293,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 	public void resetPwd(String email, String password) {
 		UserInfo userInfo = this.userInfoMapper.selectByEmail(email);
 		if (null == userInfo) {
-			throw new BusinessException("邮箱账户不存在");
+			throw new BusinessException("メールが存在しません");
 		}
 		UserInfo updateInfo = new UserInfo();
 		updateInfo.setPassword(StringTools.encodeByMd5(password));

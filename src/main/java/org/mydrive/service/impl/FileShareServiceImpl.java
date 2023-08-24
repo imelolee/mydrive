@@ -180,7 +180,7 @@ public class FileShareServiceImpl implements FileShareService {
             throw new BusinessException(ResponseCodeEnum.CODE_902.getMsg());
         }
         if (!fileShare.getCode().equals(code)) {
-            throw new BusinessException("提取码错误");
+            throw new BusinessException("抽出コードエラー");
         }
         // 更新浏览次数
         this.fileShareMapper.updateShareShowCount(shareId);

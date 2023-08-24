@@ -54,7 +54,7 @@ public class FileInfoController extends CommonFileController {
             query.setFileCategory(categoryEnum.getCategory());
         }
         query.setUserId(getUserInfoFromSession(session).getUserId());
-        query.setOrderBy("last_update_time desc");
+        query.setOrderBy("folder_type desc, last_update_time desc");
         query.setDelFlag(FileDelFlagEnum.USING.getFlag());
         PaginationResultVO result = fileInfoService.findListByPage(query);
         return getSuccessResponseVO(convert2PaginationVO(result, FileInfoVO.class));
