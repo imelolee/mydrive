@@ -1,11 +1,11 @@
 package org.mydrive.entity.enums;
 
 public enum FileCategoryEnum {
-    VIDEO(1, "video", "视频"),
-    MUSIC(1, "music", "音乐"),
-    IMAGE(3, "image", "图片"),
-    DOC(4, "doc", "文档"),
-    OTHERS(5, "others", "其他");
+    VIDEO(1, "video", "Video"),
+    MUSIC(2, "music", "Music"),
+    IMAGE(3, "image", "Image"),
+    DOC(4, "doc", "Document"),
+    OTHERS(5, "others", "Others");
 
     private Integer category;
     private String code;

@@ -1,8 +1,8 @@
 package org.mydrive.entity.enums;
 
 public enum FileFolderTypeEnum {
-    FILE(0, "文件"),
-    FOLDER(1, "目录");
+    FILE(0, "File"),
+    FOLDER(1, "Folder");
 
     private Integer type;
     private String desc;

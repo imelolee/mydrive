@@ -12,17 +12,17 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 public class CreateImageCode {
-    // 图片的宽度。
+    // width of image
     private int width = 160;
-    // 图片的高度。
+    // height of image
     private int height = 40;
-    // 验证码字符个数
+    // letter number of validation code
     private int codeCount = 4;
-    // 验证码干扰线数
+    // random line on image
     private int lineCount = 20;
-    // 验证码
+    // validation code
     private String code = null;
-    // 验证码图片Buffer
+    // code image buffer
     private BufferedImage buffImg = null;
     Random random = new Random();
 
@@ -51,27 +51,27 @@ public class CreateImageCode {
         creatImage();
     }
 
-    // 生成图片
+    // create image
     private void creatImage() {
-        int fontWidth = width / codeCount;// 字体的宽度
-        int fontHeight = height - 5;// 字体的高度
+        int fontWidth = width / codeCount;
+        int fontHeight = height - 5;
         int codeY = height - 8;
 
-        // 图像buffer
+        // get image buffer
         buffImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics g = buffImg.getGraphics();
         //Graphics2D g = buffImg.createGraphics();
-        // 设置背景色
+        // set background color
         g.setColor(getRandColor(200, 250));
         g.fillRect(0, 0, width, height);
 
 
-        // 设置字体
+        // set font
         //Font font1 = getFont(fontHeight);
         Font font = new Font("Fixedsys", Font.BOLD, fontHeight);
         g.setFont(font);
 
-        // 设置干扰线
+        // set random line
         for (int i = 0; i < lineCount; i++) {
             int xs = random.nextInt(width);
             int ys = random.nextInt(height);
@@ -81,8 +81,8 @@ public class CreateImageCode {
             g.drawLine(xs, ys, xe, ye);
         }
 
-        // 添加噪点
-        float yawpRate = 0.01f;// 噪声率
+        // add noise
+        float yawpRate = 0.01f;// noise rate
         int area = (int) (yawpRate * width * height);
         for (int i = 0; i < area; i++) {
             int x = random.nextInt(width);
@@ -92,21 +92,18 @@ public class CreateImageCode {
         }
 
 
-        String str1 = randomStr(codeCount);// 得到随机字符
+        String str1 = randomStr(codeCount);// get random letter
         this.code = str1;
         for (int i = 0; i < codeCount; i++) {
             String strRand = str1.substring(i, i + 1);
             g.setColor(getRandColor(1, 255));
-            // g.drawString(a,x,y);
-            // a为要画出来的东西，x和y表示要画的东西最左侧字符的基线位于此图形上下文坐标系的 (x, y) 位置处
-
             g.drawString(strRand, i * fontWidth + 3, codeY);
         }
 
 
     }
 
-    // 得到随机字符
+    // get random string
     private String randomStr(int n) {
         String str1 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
         String str2 = "";
@@ -119,8 +116,8 @@ public class CreateImageCode {
         return str2;
     }
 
-    // 得到随机颜色
-    private Color getRandColor(int fc, int bc) {// 给定范围获得随机颜色
+    // get random color
+    private Color getRandColor(int fc, int bc) {// color range
         if (fc > 255)
             fc = 255;
         if (bc > 255)
@@ -131,9 +128,7 @@ public class CreateImageCode {
         return new Color(r, g, b);
     }
 
-    /**
-     * 产生随机字体
-     */
+    // get random font
     private Font getFont(int size) {
         Random random = new Random();
         Font font[] = new Font[5];
@@ -145,7 +140,6 @@ public class CreateImageCode {
         return font[random.nextInt(5)];
     }
 
-    // 扭曲方法
     private void shear(Graphics g, int w1, int h1, Color color) {
         shearX(g, w1, h1, color);
         shearY(g, w1, h1, color);
@@ -211,18 +205,4 @@ public class CreateImageCode {
         return code.toLowerCase();
     }
 
-    //使用方法
-          /*public void getCode3(HttpServletRequest req, HttpServletResponse response,HttpSession session) throws IOException{
-         // 设置响应的类型格式为图片格式
-             response.setContentType("image/jpeg");
-             //禁止图像缓存。
-            response.setHeader("Pragma", "no-cache");
-            response.setHeader("Cache-Control", "no-cache");
-            response.setDateHeader("Expires", 0);
-
-
-            CreateImageCode vCode = new CreateImageCode(100,30,5,10);
-             session.setAttribute("code", vCode.getCode());
-            vCode.write(response.getOutputStream());
-      }*/
 }

@@ -3,38 +3,22 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.mydrive.mappers.FileShareMapper">
 
-    <!--实体映射-->
     <resultMap id="base_result_map" type="org.mydrive.entity.po.FileShare">
-        <!--分享id-->
         <result column="share_id" property="shareId"/>
-        <!--文件id-->
         <result column="file_id" property="fileId"/>
-        <!--用户id-->
         <result column="user_id" property="userId"/>
-        <!--有效期类型 0：1天 1：7天 2：30天 3：永久有效-->
         <result column="valid_type" property="validType"/>
-        <!--失效时间-->
         <result column="expire_time" property="expireTime"/>
-        <!--分享时间-->
         <result column="share_time" property="shareTime"/>
-        <!--提取码-->
         <result column="code" property="code"/>
-        <!--浏览次数-->
         <result column="show_count" property="showCount"/>
-        <!--文件名-->
         <result column="file_name" property="fileName"/>
-        <!--文件封面-->
         <result column="file_cover" property="fileCover"/>
-        <!--0-文件，1-目录-->
         <result column="folder_type" property="folderType"/>
-        <!--文件分类：1-视频，2-音频，3-图片，4-文档，5-其他-->
         <result column="file_category" property="fileCategory"/>
-        <!--文件类型-->
         <result column="file_type" property="fileType"/>
     </resultMap>
 
-
-    <!-- 通用查询结果列-->
     <sql id="base_column_list">
         share_id
         ,s.file_id,s.user_id,valid_type,expire_time,

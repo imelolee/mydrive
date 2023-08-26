@@ -1,10 +1,10 @@
 package org.mydrive.entity.enums;
 
 public enum ShareValidTypeEnum {
-    DAY_1(0, 1, "1天"),
-    DAY_7(1, 7, "7天"),
-    DAY_30(2, 30, "30天"),
-    FOREVER(3, -1, "永久有效");
+    DAY_1(0, 1, "1 day"),
+    DAY_7(1, 7, "7 days"),
+    DAY_30(2, 30, "30 days"),
+    FOREVER(3, -1, "Forever valid");
 
     private Integer type;
     private Integer days;

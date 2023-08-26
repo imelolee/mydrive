@@ -1,11 +1,11 @@
 package org.mydrive.entity.enums;
 
 public enum FileStatusEnum {
-    TRANSFER(0, "转码中"),
-    TRANSFER_FAIL(1, "转码失败"),
-    USING(2, "使用中"),
-    RECOVERY(3, "回收站"),
-    DEL(4, "已删除");
+    TRANSFER(0, "Transfer"),
+    TRANSFER_FAIL(1, "Transfer failed"),
+    USING(2, "Using"),
+    RECOVERY(3, "Recovery"),
+    DEL(4, "Deleted");
 
     FileStatusEnum(Integer status, String desc) {
         this.status = status;

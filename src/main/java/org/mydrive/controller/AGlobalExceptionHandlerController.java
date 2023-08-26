@@ -30,18 +30,18 @@ public class AGlobalExceptionHandlerController extends ABaseController {
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_404.getMsg());
             ajaxResponse.setStatus(STATUC_ERROR);
         } else if (e instanceof BusinessException) {
-            //业务错误
+            // business error
             BusinessException biz = (BusinessException) e;
             ajaxResponse.setCode(biz.getCode() == null ? ResponseCodeEnum.CODE_600.getCode() : biz.getCode());
             ajaxResponse.setInfo(biz.getMessage());
             ajaxResponse.setStatus(STATUC_ERROR);
         } else if (e instanceof BindException|| e instanceof MethodArgumentTypeMismatchException) {
-            //参数类型错误
+            // params error
             ajaxResponse.setCode(ResponseCodeEnum.CODE_600.getCode());
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_600.getMsg());
             ajaxResponse.setStatus(STATUC_ERROR);
         } else if (e instanceof DuplicateKeyException) {
-            //主键冲突
+            // main key conflict
             ajaxResponse.setCode(ResponseCodeEnum.CODE_601.getCode());
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_601.getMsg());
             ajaxResponse.setStatus(STATUC_ERROR);

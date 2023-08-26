@@ -1,8 +1,8 @@
 package org.mydrive.entity.enums;
 
 public enum UserStatusEnum {
-    DISABLE(0, "禁用"),
-    ENABLE(1, "启用");
+    DISABLE(0, "disable"),
+    ENABLE(1, "enable");
 
     private Integer status;
     private String desc;

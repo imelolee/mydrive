@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component("appConfig")
 public class AppConfig {
-    @Value("meloligen@gmail.com")
+    @Value("")
     private String sendUserName;
 
     @Value("${admin.emails}")

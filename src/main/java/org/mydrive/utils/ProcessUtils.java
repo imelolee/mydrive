@@ -23,17 +23,16 @@ public class ProcessUtils {
         Process process = null;
         try {
             process = Runtime.getRuntime().exec(cmd);
-            // 执行ffmpeg命令
-            // 取出输出流和错误流信息
+            // exec ffmpeg, get output stream & error stream
             PrintStream errorStream = new PrintStream(process.getErrorStream());
             PrintStream inputStream = new PrintStream(process.getInputStream());
             errorStream.start();
             inputStream.start();
-            // 等待ffmpeg命令执行完
+            // wait ffmpeg command finished
             process.waitFor();
-            // 获取执行结果
+            // get exec results
             String result = errorStream.stringBuffer.append(inputStream.stringBuffer + "\n").toString();
-            // 输出执行命令信息
+            // output commnad info
             if (outprintLog) {
                 logger.info("Exce {}, result{}", cmd, result);
             } else {

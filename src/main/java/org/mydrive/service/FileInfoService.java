@@ -10,136 +10,55 @@ import org.mydrive.entity.vo.PaginationResultVO;
 import org.springframework.web.multipart.MultipartFile;
 
 
-/**
- * 文件信息表 业务接口
- */
 public interface FileInfoService {
 
-    /**
-     * 根据条件查询列表
-     */
     List<FileInfo> findListByParam(FileInfoQuery param);
 
-    /**
-     * 根据条件查询列表
-     */
     Integer findCountByParam(FileInfoQuery param);
 
-    /**
-     * 分页查询
-     */
     PaginationResultVO<FileInfo> findListByPage(FileInfoQuery param);
 
-    /**
-     * 新增
-     */
     Integer add(FileInfo bean);
 
-    /**
-     * 批量新增
-     */
     Integer addBatch(List<FileInfo> listBean);
 
-    /**
-     * 批量新增/修改
-     */
     Integer addOrUpdateBatch(List<FileInfo> listBean);
 
-    /**
-     * 多条件更新
-     */
     Integer updateByParam(FileInfo bean, FileInfoQuery param);
 
-    /**
-     * 多条件删除
-     */
     Integer deleteByParam(FileInfoQuery param);
 
-    /**
-     * 根据FileId查询对象
-     */
     FileInfo getFileInfoByFileId(String fileId);
 
-    /**
-     * 根据FileId和UserId获取对象
-     */
     FileInfo getFileInfoByFileIdAndUserId(String fileId, String userId);
 
-
-    /**
-     * 根据FileId修改
-     */
     Integer updateFileInfoByFileId(FileInfo bean, String fileId);
 
-
-    /**
-     * 根据FileId删除
-     */
     Integer deleteFileInfoByFileId(String fileId);
 
-
-    /**
-     * 根据UserId查询对象
-     */
     FileInfo getFileInfoByUserId(String userId);
 
-
-    /**
-     * 根据UserId修改
-     */
     Integer updateFileInfoByUserId(FileInfo bean, String userId);
 
-
-    /**
-     * 根据UserId删除
-     */
     Integer deleteFileInfoByUserId(String userId);
 
-
-    /**
-     * 文件上传
-     */
     UploadResultDto uploadFile(SessionWebUserDto webUserDto, String fileId, MultipartFile file,
                                String fileName, String filePid, String fileMd5, Integer chunkIndex, Integer chunks);
 
-    /**
-     * 新建文件夹
-     */
     FileInfo newFolder(String filePid, String userId, String folderName);
 
-    /**
-     * 重命名
-     */
     FileInfo rename(String fileId, String userId, String fileName);
 
-    /**
-     * 更改文件夹
-     */
     void changeFileFolder(String fileIds, String filePid, String userId);
 
-    /**
-     * 删除文件放入回收站
-     */
     void removeFile2RecyleBatch(String userId, String fileIds);
 
-    /**
-     * 批量从回收站中恢复文件
-     */
     void recoveryFileBatch(String userId, String fileIds);
 
-    /**
-     * 从回收站彻底删除
-     */
     void delFileBatch(String userId, String fileIds, Boolean adminOp);
 
-    /**
-     * 仅获取已分享的文件
-     */
     void checkRootFilePid(String rootFilePid, String userId, String fileId);
 
-    /**
-     * 保存分享的文件
-     */
     void saveShare(String shareRootFilePid, String shareFileIds, String myFolderId, String shareUserId, String currentUserId);
 
 }
