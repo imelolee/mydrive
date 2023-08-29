@@ -22,7 +22,6 @@
         <result column="file_md5" property="fileMd5"/>
     </resultMap>
 
-
     <sql id="base_column_list">
         file_id
         ,user_id,file_category,file_type,status,
@@ -81,14 +80,13 @@
             and file_md5 = #{query.fileMd5}
         </if>
     </sql>
-    <!-- 通用条件列-->
+
     <sql id="base_condition">
         <where>
             <include refid="base_condition_filed"/>
         </where>
     </sql>
 
-    <!-- 通用查询条件列-->
     <sql id="query_condition">
         <where>
             <include refid="base_condition_filed"/>
@@ -99,10 +97,10 @@
                 and user_id like concat('%', #{query.userIdFuzzy}, '%')
             </if>
             <if test="query.recoveryTimeStart!= null and query.recoveryTimeStart!=''">
-                <![CDATA[ and  recovery_time>=str_to_date(#{query.recoveryTimeStart}, '%Y-%m-%d') ]]>
+                <![CDATA[ and  recovery_time >= str_to_date(#{query.recoveryTimeStart}, '%Y-%m-%d') ]]>
             </if>
             <if test="query.recoveryTimeEnd!= null and query.recoveryTimeEnd!=''">
-                <![CDATA[ and  recovery_time< date_sub(str_to_date(#{query.recoveryTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+                <![CDATA[ and  recovery_time < date_sub(str_to_date(#{query.recoveryTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
             </if>
             <if test="query.filePidFuzzy!= null  and query.filePidFuzzy!=''">
                 and file_pid like concat('%', #{query.filePidFuzzy}, '%')
@@ -143,7 +141,6 @@
         </where>
     </sql>
 
-    <!-- 查询集合-->
     <select id="selectList" resultMap="base_result_map">
         SELECT
         <include refid="base_column_list"/>
@@ -157,13 +154,11 @@
         </if>
     </select>
 
-    <!-- 查询数量-->
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT count(1) FROM file_info
         <include refid="query_condition"/>
     </select>
 
-    <!-- 插入 （匹配有值的字段）-->
     <insert id="insert" parameterType="org.mydrive.entity.po.FileInfo">
         INSERT INTO file_info
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -268,7 +263,6 @@
         </trim>
     </insert>
 
-    <!-- 插入或者更新 （匹配有值的字段）-->
     <insert id="insertOrUpdate" parameterType="org.mydrive.entity.po.FileInfo">
         INSERT INTO file_info
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -424,7 +418,6 @@
         </trim>
     </insert>
 
-    <!-- 添加 （批量插入）-->
     <insert id="insertBatch" parameterType="org.mydrive.entity.po.FileInfo">
         INSERT INTO file_info(
         file_id,
@@ -466,7 +459,6 @@
         </foreach>
     </insert>
 
-    <!-- 批量新增修改 （批量插入）-->
     <insert id="insertOrUpdateBatch" parameterType="org.mydrive.entity.po.FileInfo">
         INSERT INTO file_info(
         file_id,
@@ -525,7 +517,6 @@
         file_md5 = VALUES(file_md5)
     </insert>
 
-    <!--多条件修改-->
     <update id="updateByParam" parameterType="org.mydrive.entity.query.FileInfoQuery">
         UPDATE file_info
         <set>
@@ -581,13 +572,11 @@
         <include refid="query_condition"/>
     </update>
 
-    <!--多条件删除-->
     <delete id="deleteByParam">
         delete from file_info
         <include refid="query_condition"/>
     </delete>
 
-    <!-- 根据FileId修改-->
     <update id="updateByFileId" parameterType="org.mydrive.entity.po.FileInfo">
         UPDATE file_info
         <set>
@@ -640,21 +629,18 @@
         where file_id=#{fileId}
     </update>
 
-    <!-- 根据FileId删除-->
     <delete id="deleteByFileId">
         delete
         from file_info
         where file_id = #{fileId}
     </delete>
 
-    <!-- 根据PrimaryKey获取对象-->
     <select id="selectByFileId" resultMap="base_result_map">
         select
         <include refid="base_column_list"/>
         from file_info where file_id=#{fileId}
     </select>
 
-    <!-- 根据UserId修改-->
     <update id="updateByUserId" parameterType="org.mydrive.entity.po.FileInfo">
         UPDATE file_info
         <set>
@@ -707,14 +693,12 @@
         where user_id=#{userId}
     </update>
 
-    <!-- 根据UserId删除-->
     <delete id="deleteByUserId">
         delete
         from file_info
         where user_id = #{userId}
     </delete>
 
-    <!-- 根据PrimaryKey获取对象-->
     <select id="selectByUserId" resultMap="base_result_map">
         select
         <include refid="base_column_list"/>

@@ -18,7 +18,7 @@ public class FileCleanTask {
     @Resource
     private FileInfoService fileInfoService;
 
-    @Scheduled(fixedDelay = 1000*60*3)
+    @Scheduled(fixedDelay = 1000*60*10)
     public void execute(){
         FileInfoQuery fileInfoQuery = new FileInfoQuery();
         fileInfoQuery.setDelFlag(FileDelFlagEnum.RECYCLE.getFlag());

@@ -1,6 +1,7 @@
 package org.mydrive.entity.enums;
 
 public enum FileDelFlagEnum {
+    DEL(0, "Using"),
     RECYCLE(1, "Recycle"),
     USING(2, "Using");
 

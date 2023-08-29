@@ -25,8 +25,7 @@ public class RecycleController extends ABaseController {
     @RequestMapping("/loadRecycleList")
     @GlobalInterceptor
     public ResponseVO loadRecycleList(HttpSession session, Integer pageNo, Integer pageSize) {
-        SessionWebUserDto webUserDto = getUserInfoFromSession(session);
-        fileInfoService.cleanExpiredFile(webUserDto.getUserId());
+        fileInfoService.cleanExpiredFile();
 
         FileInfoQuery fileInfoQuery = new FileInfoQuery();
         fileInfoQuery.setPageSize(pageSize);

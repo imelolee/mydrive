@@ -5,27 +5,16 @@ import java.util.Date;
 
 public class FileShareQuery extends BaseParam {
 
-
 	private String shareId;
-
 	private String shareIdFuzzy;
-
 	private String fileId;
-
 	private String fileIdFuzzy;
-
 	private String userId;
-
 	private String userIdFuzzy;
-
 	private Integer validType;
-
 	private String expireTime;
-
 	private String expireTimeStart;
-
 	private String expireTimeEnd;
-
 	private String shareTime;
 
 	private String shareTimeStart;
