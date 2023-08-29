@@ -830,6 +830,7 @@ public class FileInfoServiceImpl implements FileInfoService {
         fileInfo.setDelFlag(FileDelFlagEnum.USING.getFlag());
         fileInfo.setFilePid(Constants.ZERO_STRING);
         fileInfo.setLastUpdateTime(new Date());
+        fileInfo.setRecoveryTime(null);
         this.fileInfoMapper.updateFileDelFlagBatch(fileInfo, userId, null, delFileIdList, FileDelFlagEnum.RECYCLE.getFlag());
 
         // rename selected file
@@ -885,6 +886,39 @@ public class FileInfoServiceImpl implements FileInfoService {
         UserSpaceDto userSpaceDto = redisComponent.getUserSpaceUse(userId);
         userSpaceDto.setUseSpace(useSpace);
         redisComponent.saveUserSpaceUse(userId, userSpaceDto);
+
+        // delete local storage file
+        for (FileInfo fileInfo : fileInfoList) {
+            delLocalFile(fileInfo);
+        }
+
+    }
+
+    /**
+     * delLocalFile
+     *
+     * @param fileInfo
+     */
+    void delLocalFile(FileInfo fileInfo) {
+        if (fileInfo.getFileCategory() == 1) {
+            // delete video & cover & part files
+            try {
+                FileUtils.deleteQuietly(new File(appConfig.getProjectFolder() +Constants.FILE_FOLDER_FILE  + fileInfo.getFilePath()));
+                FileUtils.deleteQuietly(new File(appConfig.getProjectFolder() +Constants.FILE_FOLDER_FILE + fileInfo.getFileCover()));
+                FileUtils.deleteDirectory(new File(appConfig.getProjectFolder() +Constants.FILE_FOLDER_FILE + StringTools.getFileNameNoSuffix(fileInfo.getFilePath())));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                if (fileInfo.getFileCover() != null) {
+                    FileUtils.deleteQuietly(new File(appConfig.getProjectFolder() +Constants.FILE_FOLDER_FILE + fileInfo.getFileCover()));
+                }
+                FileUtils.deleteQuietly(new File(appConfig.getProjectFolder() +Constants.FILE_FOLDER_FILE + fileInfo.getFilePath()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**
@@ -990,6 +1024,32 @@ public class FileInfoServiceImpl implements FileInfoService {
             for (FileInfo item : sourceFileList) {
                 findAllSubFile(copyFileList, item, sourceUserId, currentUserId, currentDate, newFileId);
             }
+        }
+    }
+
+    /**
+     * cleanExpiredFile
+     *
+     * @param userId
+     */
+    @Override
+    public void cleanExpiredFile(String userId) {
+        Date currentDate = new Date();
+
+        FileInfoQuery fileInfoQuery = new FileInfoQuery();
+        fileInfoQuery.setUserId(userId);
+        fileInfoQuery.setDelFlag(1);
+        List<FileInfo> recycleFileList = this.fileInfoMapper.selectList(fileInfoQuery);
+
+        List<String> expiredFileIdList = new ArrayList<>();
+        for (FileInfo recycleFile : recycleFileList) {
+            if (DateUtils.isExpired(currentDate, recycleFile.getRecoveryTime(), Constants.DAYS_10)) {
+                expiredFileIdList.add(recycleFile.getFileId());
+            }
+        }
+        if (expiredFileIdList.size() != 0) {
+            String expiredIds = String.join(",", expiredFileIdList);
+            this.delFileBatch(userId, expiredIds, false);
         }
     }
 }

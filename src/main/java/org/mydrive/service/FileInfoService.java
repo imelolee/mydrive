@@ -61,4 +61,5 @@ public interface FileInfoService {
 
     void saveShare(String shareRootFilePid, String shareFileIds, String myFolderId, String shareUserId, String currentUserId);
 
+    void cleanExpiredFile(String userId);
 }

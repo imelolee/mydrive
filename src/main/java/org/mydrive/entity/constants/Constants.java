@@ -16,6 +16,8 @@ public class Constants {
 
     public static final Integer LENGTH_150 = 150;
 
+    public static final Long DAYS_10 = 10L * 24 * 60 * 60 * 1000;
+
     public static final Long MB = 1024 * 1024L;
 
     public static final String FILE_FOLDER_FILE = "/file/";

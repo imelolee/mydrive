@@ -51,4 +51,16 @@ public class DateUtils {
         calendar.add(Calendar.DAY_OF_YEAR, day);
         return calendar.getTime();
     }
+
+    public static Boolean isExpired(Date currentDate, Date checkeDate, Long time){
+
+        long timeToCheck = checkeDate.getTime() + time;
+        Date newDate = new Date(timeToCheck);
+
+        if (newDate.after(currentDate)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

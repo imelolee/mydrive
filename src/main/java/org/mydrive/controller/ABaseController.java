@@ -56,6 +56,7 @@ public class ABaseController {
         resultVO.setPageSize(result.getPageSize());
         resultVO.setPageTotal(result.getPageTotal());
         resultVO.setTotalCount(result.getTotalCount());
+
         return resultVO;
     }
 

@@ -852,9 +852,9 @@
             <if test="bean.status != null">
                 status = #{bean.status},
             </if>
-            <if test="bean.recoveryTime != null">
-                recovery_time = #{bean.recoveryTime},
-            </if>
+
+            recovery_time = #{bean.recoveryTime},
+
             <if test="bean.delFlag != null">
                 del_flag = #{bean.delFlag},
             </if>

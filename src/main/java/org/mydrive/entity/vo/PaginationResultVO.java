@@ -8,6 +8,7 @@ public class PaginationResultVO<T> {
 	private Integer pageSize;
 	private Integer pageNo;
 	private Integer pageTotal;
+
 	private List<T> list = new ArrayList<T>();
 
 	public PaginationResultVO(Integer totalCount, Integer pageSize, Integer pageNo, List<T> list) {
