@@ -880,6 +880,8 @@ public class FileInfoServiceImpl implements FileInfoService {
 
         FileInfo delFileInfo = new FileInfo();
         delFileInfo.setDelFlag(FileDelFlagEnum.DEL.getFlag());
+        delFileInfo.setFileMd5("-1");
+        delFileInfo.setFileSize(0L);
 
         // delete file in the child folder
         if (!delFileSubFolderFileIdList.isEmpty()) {

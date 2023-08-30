@@ -837,7 +837,7 @@
                 status = #{bean.status},
             </if>
 
-            recovery_time = #{bean.recoveryTime},
+                recovery_time = #{bean.recoveryTime},
 
             <if test="bean.delFlag != null">
                 del_flag = #{bean.delFlag},
