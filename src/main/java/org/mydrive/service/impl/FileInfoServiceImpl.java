@@ -908,7 +908,6 @@ public class FileInfoServiceImpl implements FileInfoService {
      */
     void delLocalFile(FileInfo fileInfo) {
         FileInfoQuery fileInfoQuery = new FileInfoQuery();
-        fileInfoQuery.setUserId(fileInfo.getUserId());
         fileInfoQuery.setFileMd5(fileInfo.getFileMd5());
         Integer count = this.fileInfoMapper.selectCount(fileInfoQuery);
         // delete only one file with the same md5
