@@ -11,7 +11,7 @@
 
     <groupId>org.mydrive</groupId>
     <artifactId>MyDrive</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>MyDrive</name>
     <description>MyDrive</description>
@@ -48,12 +48,7 @@
             </exclusions>
         </dependency>
 
-        <!--邮件发送-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-            <version>${springboot.version}</version>
-        </dependency>
+
         <!--redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -69,7 +64,7 @@
         </dependency>
 
 
-        <!-- 数据库-->
+        <!--mysql-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -77,7 +72,7 @@
         </dependency>
 
 
-        <!-- 日志版本 -->
+        <!--logback-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -89,7 +84,7 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!--切面-->
+        <!--aspectj-->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
@@ -142,18 +137,5 @@
                 </configuration>
             </plugin>
         </plugins>
-
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>src/main/java</directory>-->
-<!--                <includes>-->
-<!--                    <include>**/*.properties</include>-->
-<!--                    <include>**/*.xml</include>-->
-<!--                </includes>-->
-<!--                <filtering>false</filtering>-->
-<!--            </resource>-->
-<!--        </resources>-->
     </build>
-
-
 </project>
