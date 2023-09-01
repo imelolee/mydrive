@@ -30,9 +30,10 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+/.vscode/
 
 /file/
 /logs/
 /.mvn/
 /temp/
+

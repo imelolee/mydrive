@@ -24,7 +24,9 @@ public class RecycleController extends ABaseController {
 
     @RequestMapping("/loadRecycleList")
     @GlobalInterceptor
-    public ResponseVO loadRecycleList(HttpSession session, Integer pageNo, Integer pageSize) { 
+    public ResponseVO loadRecycleList(HttpSession session, Integer pageNo, Integer pageSize) {
+        fileInfoService.cleanExpiredFile();
+
         FileInfoQuery fileInfoQuery = new FileInfoQuery();
         fileInfoQuery.setPageSize(pageSize);
         fileInfoQuery.setPageNo(pageNo);
@@ -32,6 +34,7 @@ public class RecycleController extends ABaseController {
         fileInfoQuery.setOrderBy("recovery_time desc");
         fileInfoQuery.setFolderType(0);
         fileInfoQuery.setDelFlag(FileDelFlagEnum.RECYCLE.getFlag());
+
         PaginationResultVO result = fileInfoService.findListByPage(fileInfoQuery);
         return getSuccessResponseVO(convert2PaginationVO(result, FileInfoVO.class));
     }

@@ -42,7 +42,6 @@ public class StringTools {
         if (isEmpty(field)) {
             return field;
         }
-        //如果第二个字母是大写，第一个字母不大写
         if (field.length() > 1 && Character.isUpperCase(field.charAt(1))) {
             return field;
         }

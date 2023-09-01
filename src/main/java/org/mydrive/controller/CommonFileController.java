@@ -80,7 +80,7 @@ public class CommonFileController extends ABaseController {
                 return;
             }
             if (FileCategoryEnum.VIDEO.getCategory().equals(fileInfo.getFileCategory())) {
-                // 视频文件重新设置路径
+                // reset video file path
                 String fileNameNoSuffix = StringTools.getFileNameNoSuffix(fileInfo.getFilePath());
                 filePath = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE + fileNameNoSuffix + "/" + Constants.M3U8_NAME;
             } else {

@@ -3,16 +3,19 @@ package org.mydrive.controller;
 import org.mydrive.annotation.GlobalInterceptor;
 import org.mydrive.annotation.VerifyParam;
 import org.mydrive.entity.dto.SessionWebUserDto;
+import org.mydrive.entity.enums.DateTimePatternEnum;
 import org.mydrive.entity.query.FileShareQuery;
 import org.mydrive.entity.po.FileShare;
 import org.mydrive.entity.vo.PaginationResultVO;
 import org.mydrive.entity.vo.ResponseVO;
 import org.mydrive.service.FileShareService;
+import org.mydrive.utils.DateUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.util.Date;
 
 /**
  * 分享信息 Controller
@@ -31,6 +34,7 @@ public class FileShareController extends ABaseController {
         SessionWebUserDto webUserDto = getUserInfoFromSession(session);
         query.setUserId(webUserDto.getUserId());
         query.setQueryFileName(true);
+        query.setExpireTimeStart(DateUtils.format(new Date(), DateTimePatternEnum.YYYY_MM_DD.getPattern()));
 
         PaginationResultVO<FileShare> result = fileShareService.findListByPage(query);
         return getSuccessResponseVO(result);

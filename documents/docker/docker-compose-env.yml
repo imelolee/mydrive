@@ -1,0 +1,23 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0.29
+    container_name: mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password # set root password
+    ports:
+      - 3306:3306
+    volumes:
+      - /Users/riwataru/mydata/mysql/data:/var/lib/mysql
+      - /Users/riwataru/mydata/mysql/conf:/etc/mysql
+      - /Users/riwataru/mydata/mysql/log:/var/log/mysql
+  redis:
+    image: redis:7
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - /Users/riwataru/mydata/redis/data:/data
+    ports:
+      - 6379:6379

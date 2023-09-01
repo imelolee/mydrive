@@ -14,6 +14,10 @@ public class FileInfoVO {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date recoveryTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastUpdateTime;
 
     private Integer folderType;
@@ -99,5 +103,13 @@ public class FileInfoVO {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Date getRecoveryTime() {
+        return recoveryTime;
+    }
+
+    public void setRecoveryTime(Date recoveryTime) {
+        this.recoveryTime = recoveryTime;
     }
 }

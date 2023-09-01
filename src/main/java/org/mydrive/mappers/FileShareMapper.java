@@ -2,37 +2,17 @@ package org.mydrive.mappers;
 
 import org.apache.ibatis.annotations.Param;
 
-/**
- * 分享信息 数据库操作接口
- */
-public interface FileShareMapper<T,P> extends BaseMapper<T,P> {
+public interface FileShareMapper<T, P> extends BaseMapper<T, P> {
 
-	/**
-	 * 根据ShareId更新
-	 */
-	 Integer updateByShareId(@Param("bean") T t,@Param("shareId") String shareId);
+    Integer updateByShareId(@Param("bean") T t, @Param("shareId") String shareId);
 
+    Integer deleteByShareId(@Param("shareId") String shareId);
 
-	/**
-	 * 根据ShareId删除
-	 */
-	 Integer deleteByShareId(@Param("shareId") String shareId);
+    T selectByShareId(@Param("shareId") String shareId);
 
+    Integer deleteFileShareBatch(@Param("shareIdArray") String[] shareIdArray, @Param("userId") String userId);
 
-	/**
-	 * 根据ShareId获取对象
-	 */
-	 T selectByShareId(@Param("shareId") String shareId);
-
-	/**
-	 * 批量删除分享记录
-	 */
-	 Integer deleteFileShareBatch(@Param("shareIdArray") String[] shareIdArray, @Param("userId") String userId);
-
-	/**
-	 * 更新分享次数
-	 */
-	void updateShareShowCount(@Param("shareId") String shareId);
+    void updateShareShowCount(@Param("shareId") String shareId);
 
 
 }

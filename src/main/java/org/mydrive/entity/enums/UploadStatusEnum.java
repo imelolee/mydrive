@@ -1,9 +1,9 @@
 package org.mydrive.entity.enums;
 
 public enum UploadStatusEnum {
-    UPLOAD_SECONDS("upload_seconds", "秒传"),
-    UPLOADING("uploading", "上传中"),
-    UPLOAD_FINISH("upload_finish", "上传完成");
+    UPLOAD_SECONDS("upload_seconds", "fast upload"),
+    UPLOADING("uploading", "uploading"),
+    UPLOAD_FINISH("upload_finish", "upload finished");
 
     private String code;
     private String desc;

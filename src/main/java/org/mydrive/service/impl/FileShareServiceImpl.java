@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 /**
- * 分享信息 业务接口实现
+ * FileShareService
  */
 @Service("fileShareService")
 public class FileShareServiceImpl implements FileShareService {
@@ -34,7 +34,9 @@ public class FileShareServiceImpl implements FileShareService {
     private FileShareMapper<FileShare, FileShareQuery> fileShareMapper;
 
     /**
-     * 根据条件查询列表
+     * findListByParam
+     * @param param
+     * @return
      */
     @Override
     public List<FileShare> findListByParam(FileShareQuery param) {
@@ -42,7 +44,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 根据条件查询列表
+     * findCountByParam
+     * @param param
+     * @return
      */
     @Override
     public Integer findCountByParam(FileShareQuery param) {
@@ -50,7 +54,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 分页查询方法
+     * findListByPage
+     * @param param
+     * @return
      */
     @Override
     public PaginationResultVO<FileShare> findListByPage(FileShareQuery param) {
@@ -65,7 +71,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 新增
+     * add
+     * @param bean
+     * @return
      */
     @Override
     public Integer add(FileShare bean) {
@@ -73,7 +81,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 批量新增
+     * addBatch
+     * @param listBean
+     * @return
      */
     @Override
     public Integer addBatch(List<FileShare> listBean) {
@@ -84,7 +94,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 批量新增或者修改
+     * addOrUpdateBatch
+     * @param listBean
+     * @return
      */
     @Override
     public Integer addOrUpdateBatch(List<FileShare> listBean) {
@@ -95,7 +107,10 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 多条件更新
+     * updateByParam
+     * @param bean
+     * @param param
+     * @return
      */
     @Override
     public Integer updateByParam(FileShare bean, FileShareQuery param) {
@@ -104,7 +119,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 多条件删除
+     * deleteByParam
+     * @param param
+     * @return
      */
     @Override
     public Integer deleteByParam(FileShareQuery param) {
@@ -113,7 +130,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 根据ShareId获取对象
+     * getFileShareByShareId
+     * @param shareId
+     * @return
      */
     @Override
     public FileShare getFileShareByShareId(String shareId) {
@@ -121,7 +140,10 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 根据ShareId修改
+     * updateFileShareByShareId
+     * @param bean
+     * @param shareId
+     * @return
      */
     @Override
     public Integer updateFileShareByShareId(FileShare bean, String shareId) {
@@ -129,7 +151,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 根据ShareId删除
+     * deleteFileShareByShareId
+     * @param shareId
+     * @return
      */
     @Override
     public Integer deleteFileShareByShareId(String shareId) {
@@ -137,7 +161,8 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 保存分享
+     * saveShare
+     * @param fileShare
      */
     @Override
     public void saveShare(FileShare fileShare) {
@@ -159,7 +184,9 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 批量删除分享链接
+     * deleteFileShareBatch
+     * @param shareIdArray
+     * @param userId
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -171,7 +198,10 @@ public class FileShareServiceImpl implements FileShareService {
     }
 
     /**
-     * 检查分享提取码
+     * checkShareCode
+     * @param shareId
+     * @param code
+     * @return
      */
     @Override
     public SessionShareDto checkShareCode(String shareId, String code) {
@@ -182,7 +212,7 @@ public class FileShareServiceImpl implements FileShareService {
         if (!fileShare.getCode().equals(code)) {
             throw new BusinessException("抽出コードエラー");
         }
-        // 更新浏览次数
+        // update view count
         this.fileShareMapper.updateShareShowCount(shareId);
         SessionShareDto shareDto = new SessionShareDto();
         shareDto.setShareId(shareId);

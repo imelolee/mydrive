@@ -3,38 +3,22 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.mydrive.mappers.FileShareMapper">
 
-    <!--实体映射-->
     <resultMap id="base_result_map" type="org.mydrive.entity.po.FileShare">
-        <!--分享id-->
         <result column="share_id" property="shareId"/>
-        <!--文件id-->
         <result column="file_id" property="fileId"/>
-        <!--用户id-->
         <result column="user_id" property="userId"/>
-        <!--有效期类型 0：1天 1：7天 2：30天 3：永久有效-->
         <result column="valid_type" property="validType"/>
-        <!--失效时间-->
         <result column="expire_time" property="expireTime"/>
-        <!--分享时间-->
         <result column="share_time" property="shareTime"/>
-        <!--提取码-->
         <result column="code" property="code"/>
-        <!--浏览次数-->
         <result column="show_count" property="showCount"/>
-        <!--文件名-->
         <result column="file_name" property="fileName"/>
-        <!--文件封面-->
         <result column="file_cover" property="fileCover"/>
-        <!--0-文件，1-目录-->
         <result column="folder_type" property="folderType"/>
-        <!--文件分类：1-视频，2-音频，3-图片，4-文档，5-其他-->
         <result column="file_category" property="fileCategory"/>
-        <!--文件类型-->
         <result column="file_type" property="fileType"/>
     </resultMap>
 
-
-    <!-- 通用查询结果列-->
     <sql id="base_column_list">
         share_id
         ,s.file_id,s.user_id,valid_type,expire_time,
@@ -67,14 +51,13 @@
             and show_count = #{query.showCount}
         </if>
     </sql>
-    <!-- 通用条件列-->
+
     <sql id="base_condition">
         <where>
             <include refid="base_condition_filed"/>
         </where>
     </sql>
 
-    <!-- 通用查询条件列-->
     <sql id="query_condition">
         <where>
             <include refid="base_condition_filed"/>
@@ -87,11 +70,11 @@
             <if test="query.userIdFuzzy!= null  and query.userIdFuzzy!=''">
                 and s.user_id like concat('%', #{query.userIdFuzzy}, '%')
             </if>
-            <if test="query.expireTimeStart!= null and query.expireTimeStart!=''">
-                <![CDATA[ and  expire_time>=str_to_date(#{query.expireTimeStart}, '%Y-%m-%d') ]]>
+            <if test="query.expireTimeStart != null and query.expireTimeStart != ''">
+                <![CDATA[ and  expire_time>=str_to_date(#{query.expireTimeStart}, '%Y-%m-%d') ]]> or valid_type = 3
             </if>
-            <if test="query.expireTimeEnd!= null and query.expireTimeEnd!=''">
-                <![CDATA[ and  expire_time< date_sub(str_to_date(#{query.expireTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+            <if test="query.expireTimeEnd != null and query.expireTimeEnd != ''">
+                <![CDATA[ and  expire_time < date_sub(str_to_date(#{query.expireTimeEnd},'%Y-%m-%d'),interval -1 day) ]]> or valid_type = 3
             </if>
             <if test="query.shareTimeStart!= null and query.shareTimeStart!=''">
                 <![CDATA[ and  share_time>=str_to_date(#{query.shareTimeStart}, '%Y-%m-%d') ]]>
@@ -105,7 +88,6 @@
         </where>
     </sql>
 
-    <!-- 查询集合-->
     <select id="selectList" resultMap="base_result_map">
         SELECT
         <include refid="base_column_list"/>
@@ -125,13 +107,11 @@
         </if>
     </select>
 
-    <!-- 查询数量-->
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT count(1) FROM file_share s
         <include refid="query_condition"/>
     </select>
 
-    <!-- 插入 （匹配有值的字段）-->
     <insert id="insert" parameterType="org.mydrive.entity.po.FileShare">
         INSERT INTO file_share
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -188,7 +168,6 @@
         </trim>
     </insert>
 
-    <!-- 插入或者更新 （匹配有值的字段）-->
     <insert id="insertOrUpdate" parameterType="org.mydrive.entity.po.FileShare">
         INSERT INTO file_share
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -272,7 +251,6 @@
         </trim>
     </insert>
 
-    <!-- 添加 （批量插入）-->
     <insert id="insertBatch" parameterType="org.mydrive.entity.po.FileShare">
         INSERT INTO file_share(
         share_id,
@@ -298,7 +276,6 @@
         </foreach>
     </insert>
 
-    <!-- 批量新增修改 （批量插入）-->
     <insert id="insertOrUpdateBatch" parameterType="org.mydrive.entity.po.FileShare">
         INSERT INTO file_share(
         share_id,
@@ -333,7 +310,6 @@
         show_count = VALUES(show_count)
     </insert>
 
-    <!--多条件修改-->
     <update id="updateByParam" parameterType="org.mydrive.entity.query.FileShareQuery">
         UPDATE file_share
         <set>
@@ -365,13 +341,11 @@
         <include refid="query_condition"/>
     </update>
 
-    <!--多条件删除-->
     <delete id="deleteByParam">
         delete from file_share
         <include refid="query_condition"/>
     </delete>
 
-    <!-- 根据ShareId修改-->
     <update id="updateByShareId" parameterType="org.mydrive.entity.po.FileShare">
         UPDATE file_share
         <set>
@@ -400,14 +374,12 @@
         where share_id=#{shareId}
     </update>
 
-    <!-- 根据ShareId删除-->
     <delete id="deleteByShareId">
         delete
         from file_share
         where share_id = #{shareId}
     </delete>
 
-    <!-- 根据PrimaryKey获取对象-->
     <select id="selectByShareId" resultMap="base_result_map">
         select
         <include refid="base_column_list"/>
