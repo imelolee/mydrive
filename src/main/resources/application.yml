@@ -2,7 +2,7 @@ spring:
   application:
     name: MyDrive
   profiles:
-    active: dev # default env
+    active: dev # nginx.conf env
 
   mvc:
     favicon:
