@@ -30,3 +30,7 @@ spring:
 project:
   folder: /home/ligen/mydrive
 
+log:
+  root:
+    level: INFO
+

@@ -191,9 +191,9 @@ public class AccountController extends ABaseController {
         PrintWriter writer = null;
         try {
             writer = response.getWriter();
-            writer.print("Please put default avatar at avatar folder.");
+            writer.print("Please put nginx.conf avatar at avatar folder.");
         } catch (Exception e) {
-            logger.error("No default avatar", e);
+            logger.error("No nginx.conf avatar", e);
         } finally {
             writer.close();
         }

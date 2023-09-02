@@ -28,4 +28,8 @@ spring:
     timeout: 2000
 
 project:
-  folder: /Users/riwataru/Developer/JavaProjects/mydrive
+  folder: /Users/riwataru/Developer/mydrive
+
+log:
+  root:
+    level: DEBUG
