@@ -6,7 +6,8 @@ import java.io.Serializable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SysSettingsDto implements Serializable {
-    private Integer userInitUsespace = 5;
+    // init space 15GB
+    private Integer userInitUsespace = 1024 * 15;
 
     public Integer getUserInitUsespace() {
         return userInitUsespace;
